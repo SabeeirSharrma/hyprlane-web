@@ -1,0 +1,186 @@
+---
+import Layout from '../../layouts/Layout.astro';
+---
+
+<Layout title="Verify" description="Complete your Hyprlane verification">
+  <div class="min-h-[80vh] flex items-center justify-center px-6">
+    <div id="verify-container" class="w-full max-w-md text-center">
+      <div id="state-loading" class="flex flex-col items-center gap-4">
+        <div class="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-text-secondary">Validating your link...</p>
+      </div>
+
+      <div id="state-expired" class="hidden flex flex-col items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-danger/15 flex items-center justify-center">
+          <svg class="w-6 h-6 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        </div>
+        <h1 class="font-display text-2xl font-semibold">Link expired</h1>
+        <p class="text-text-secondary">This verification link has expired or already been used. Ask to be re-invited by rejoining the server.</p>
+      </div>
+
+      <div id="state-challenge" class="hidden flex flex-col items-center gap-6">
+        <div class="w-12 h-12 rounded-full bg-accent/15 flex items-center justify-center">
+          <svg class="w-6 h-6 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h1 class="font-display text-2xl font-semibold">Verify with Discord</h1>
+        <p class="text-text-secondary text-sm">Log in with your Discord account to complete verification.</p>
+        <div id="turnstile-widget" class="my-4"></div>
+        <button id="verify-btn" class="btn-primary w-full" disabled>Verify now</button>
+      </div>
+
+      <div id="state-success" class="hidden flex flex-col items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-success/15 flex items-center justify-center">
+          <svg class="w-6 h-6 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h1 class="font-display text-2xl font-semibold">You're verified</h1>
+        <p class="text-text-secondary">Return to Discord — your role has been assigned.</p>
+        <a href="https://discord.com" class="btn-ghost mt-2">Open Discord</a>
+      </div>
+
+      <div id="state-error" class="hidden flex flex-col items-center gap-4">
+        <div class="w-12 h-12 rounded-full bg-danger/15 flex items-center justify-center">
+          <svg class="w-6 h-6 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <h1 class="font-display text-2xl font-semibold">Something went wrong</h1>
+        <p id="error-message" class="text-text-secondary"></p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'https://hyprlane-api.sabplay-idk.workers.dev';
+    const CID = '1524437831823523850';
+    const REDIRECT = 'https://hyprlane.qd.je/verify/';
+
+    const params = new URLSearchParams(window.location.search);
+    const urlToken = params.get('token');
+    const code = params.get('code');
+
+    function showState(name: string) {
+      ['loading', 'expired', 'challenge', 'success', 'error'].forEach(s => {
+        document.getElementById(`state-${s}`)?.classList.toggle('hidden', s !== name);
+      });
+    }
+
+    function showError(msg: string) {
+      const el = document.getElementById('error-message');
+      if (el) el.textContent = msg;
+      showState('error');
+    }
+
+    // Handle OAuth callback first — code arrives without token
+    if (code) {
+      handleOAuthCallback(code);
+    } else if (urlToken) {
+      // Fresh link — save token, then validate
+      sessionStorage.setItem('pending_verify_token', urlToken);
+      validateToken(urlToken);
+    } else {
+      // No code, no token — check if we have a saved token from prior redirect
+      const saved = sessionStorage.getItem('pending_verify_token');
+      if (saved) {
+        validateToken(saved);
+      } else {
+        showError('No verification token provided.');
+      }
+    }
+
+    async function validateToken(t: string) {
+      try {
+        const res = await fetch(`${API}/verify/${t}`);
+        const data = await res.json();
+        if (!data.valid) { showState('expired'); return; }
+
+        // Check if we already have a Discord session for this account
+        const accessToken = sessionStorage.getItem('discord_access_token');
+        const discordUser = sessionStorage.getItem('discord_user');
+        if (accessToken && discordUser) {
+          const user = JSON.parse(discordUser);
+          if (user.id === data.discord_id) {
+            // Session matches — show challenge
+            sessionStorage.removeItem('pending_verify_token');
+            showState('challenge');
+            initTurnstile(t, data.discord_id, accessToken, data.guild_id);
+            return;
+          }
+        }
+
+        // No session or wrong account — redirect to Discord OAuth
+        window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CID}&redirect_uri=${encodeURIComponent(REDIRECT)}&response_type=code&scope=identify+email`;
+      } catch {
+        showError('Could not connect to the verification server.');
+      }
+    }
+
+    async function handleOAuthCallback(code: string) {
+      showState('loading');
+      try {
+        const res = await fetch(`${API}/auth/discord/callback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code, redirect_uri: REDIRECT }),
+        });
+        const data = await res.json();
+        if (data.session_token) {
+          sessionStorage.setItem('session_token', data.session_token);
+          sessionStorage.setItem('discord_user', JSON.stringify(data.user));
+        }
+        if (data.access_token) {
+          sessionStorage.setItem('discord_access_token', data.access_token);
+        }
+
+        // Clean URL — remove code param
+        window.history.replaceState({}, '', window.location.pathname);
+
+        // Reload — will pick up saved token and session
+        window.location.reload();
+      } catch {
+        showError('Discord login failed. Please try again.');
+      }
+    }
+
+    function initTurnstile(verifyToken: string, discordId: string, accessToken: string, guildId: string) {
+      if (typeof (window as any).turnstile !== 'undefined') {
+        (window as any).turnstile.render('#turnstile-widget', {
+          sitekey: '0x4AAAAAAAplaceholder', // TODO: replace with real sitekey
+          callback: () => { document.getElementById('verify-btn')?.removeAttribute('disabled'); },
+        });
+      } else {
+        // Turnstile script failed to load — skip for dev
+        document.getElementById('verify-btn')?.removeAttribute('disabled');
+      }
+      document.getElementById('verify-btn')?.addEventListener('click', () => {
+        completeVerification(verifyToken, discordId, accessToken);
+      });
+    }
+
+    async function completeVerification(verifyToken: string, discordId: string, accessToken: string) {
+      const btn = document.getElementById('verify-btn') as HTMLButtonElement;
+      if (btn) { btn.disabled = true; btn.textContent = 'Verifying...'; }
+      try {
+        const res = await fetch(`${API}/verify/${verifyToken}/complete`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            access_token: accessToken,
+            discord_id: discordId,
+            challenge_passed: true,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          sessionStorage.removeItem('pending_verify_token');
+          sessionStorage.removeItem('discord_access_token');
+          sessionStorage.removeItem('discord_user');
+          showState('success');
+        } else {
+          showError(data.error || 'Verification failed.');
+        }
+      } catch {
+        showError('Could not reach the verification server.');
+      }
+    }
+  </script>
+
+  <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+</Layout>

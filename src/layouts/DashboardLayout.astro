@@ -1,0 +1,50 @@
+---
+interface Props {
+  title: string;
+  guildId?: string;
+}
+
+const { title, guildId } = Astro.props;
+const base = import.meta.env.BASE_URL;
+---
+
+<div class="flex min-h-screen">
+  <!-- Sidebar -->
+  <aside class="w-56 bg-bg-surface border-r border-border-subtle fixed h-full flex flex-col">
+    <div class="p-4 border-b border-border-subtle">
+      <a href={base} class="font-display text-lg font-semibold text-text-primary hover:text-accent transition-colors">
+        Hyprlane
+      </a>
+    </div>
+
+    <nav class="flex-1 p-3 flex flex-col gap-1">
+      {guildId ? (
+        <>
+          <a href={`${base}dashboard/${guildId}/`}
+             class={`px-3 py-2 rounded text-sm transition-colors ${Astro.url.pathname.endsWith(`${guildId}/`) ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised'}`}>
+            Overview
+          </a>
+          <a href={`${base}dashboard/${guildId}/members`}
+             class={`px-3 py-2 rounded text-sm transition-colors ${Astro.url.pathname.includes('members') ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised'}`}>
+            Members
+          </a>
+          <a href={`${base}dashboard/${guildId}/settings`}
+             class={`px-3 py-2 rounded text-sm transition-colors ${Astro.url.pathname.includes('settings') ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised'}`}>
+            Settings
+          </a>
+        </>
+      ) : (
+        <a href={`${base}dashboard/`}
+           class="px-3 py-2 rounded text-sm text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised transition-colors">
+          Select server
+        </a>
+      )}
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="flex-1 ml-56 p-8">
+    <h1 class="font-display text-2xl font-semibold tracking-tight mb-6">{title}</h1>
+    <slot />
+  </main>
+</div>
