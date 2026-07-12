@@ -67,10 +67,15 @@ import Layout from '../../layouts/Layout.astro';
   </div>
 
   <script>
+    import { createClient } from '@supabase/supabase-js';
+
     const API = 'https://hyprlane-api.sabplay-idk.workers.dev';
-    const CID = '1524437831823523850';
     const base = import.meta.env.BASE_URL;
-    let session = sessionStorage.getItem('session_token');
+    const supabaseUrl = 'https://reieovanxlrqgdqnsyfq.supabase.co';
+    const supabaseAnonKey = 'YOUR_SUPABASE_ANON_KEY_HERE';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+    let session: any = null;
     let guildId: string | null = null;
     let allMembers: any[] = [];
 
@@ -129,40 +134,63 @@ import Layout from '../../layouts/Layout.astro';
       return null;
     }
 
-    const initial = parseUrl();
-    if (initial && session) { showView('overview'); activateView(initial); }
-    else if (session) { showView('guilds'); loadGuilds(); }
-    else { showView('login'); }
-
+    // Check for Supabase OAuth callback
     const code = new URLSearchParams(window.location.search).get('code');
-    if (code) handleCallback(code);
+    if (code) {
+      handleCallback(code);
+    } else {
+      // Check existing session
+      checkSession();
+    }
 
-    document.getElementById('login-btn')?.addEventListener('click', () => {
+    async function checkSession() {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      session = s;
+
+      const initial = parseUrl();
+      if (initial && session) { showView('overview'); activateView(initial); }
+      else if (session) { showView('guilds'); loadGuilds(); }
+      else { showView('login'); }
+    }
+
+    document.getElementById('login-btn')?.addEventListener('click', async () => {
       const redir = `${window.location.origin}${base}dashboard/`;
-      window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CID}&redirect_uri=${encodeURIComponent(redir)}&response_type=code&scope=identify+guilds`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: redir,
+          scopes: 'identify email guilds',
+        },
+      });
+      if (error) {
+        console.error('Login failed:', error);
+      }
     });
 
     async function handleCallback(code: string) {
+      showView('loading');
       try {
-        const res = await fetch(`${API}/auth/discord/callback`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, redirect_uri: `${window.location.origin}${base}dashboard/` }),
-        });
-        const data = await res.json();
-        if (data.session_token) {
-          sessionStorage.setItem('session_token', data.session_token);
-          session = data.session_token;
-          window.history.replaceState({}, '', `${base}dashboard/`);
-          showView('guilds'); loadGuilds();
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+        if (error) {
+          showView('login');
+          return;
         }
-      } catch { showView('login'); }
+
+        session = data.session;
+        window.history.replaceState({}, '', `${base}dashboard/`);
+        showView('guilds');
+        loadGuilds();
+      } catch {
+        showView('login');
+      }
     }
 
     async function loadGuilds() {
       if (!session) return;
       try {
-        const res = await fetch(`${API}/dashboard/guilds`, { headers: { Authorization: `Bearer ${session}` } });
+        const res = await fetch(`${API}/dashboard/guilds`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
         const guilds = await res.json();
         document.getElementById('guild-list')!.innerHTML = guilds.map((g: any) => `
           <a href="${base}dashboard/${g.id}/" class="card flex items-center gap-4 hover:border-accent transition-colors">
@@ -170,15 +198,17 @@ import Layout from '../../layouts/Layout.astro';
             <span class="font-medium">${g.name}</span>
           </a>
         `).join('');
-      } catch { showView('login'); }
+      } catch {
+        showView('login');
+      }
     }
 
     async function loadOverview() {
       if (!session || !guildId) return;
       try {
         const [stats, config] = await Promise.all([
-          fetch(`${API}/dashboard/guilds/${guildId}/stats`, { headers: { Authorization: `Bearer ${session}` } }).then(r => r.json()),
-          fetch(`${API}/dashboard/guilds/${guildId}/config`, { headers: { Authorization: `Bearer ${session}` } }).then(r => r.json()),
+          fetch(`${API}/dashboard/guilds/${guildId}/stats`, { headers: { Authorization: `Bearer ${session.access_token}` } }).then(r => r.json()),
+          fetch(`${API}/dashboard/guilds/${guildId}/config`, { headers: { Authorization: `Bearer ${session.access_token}` } }).then(r => r.json()),
         ]);
         document.getElementById('stat-verified')!.textContent = String(stats.verified_count ?? 0);
         document.getElementById('stat-flagged')!.textContent = String(stats.flagged_count ?? 0);
@@ -190,7 +220,9 @@ import Layout from '../../layouts/Layout.astro';
     async function loadMembers() {
       if (!session || !guildId) return;
       try {
-        const res = await fetch(`${API}/dashboard/guilds/${guildId}/verified-members`, { headers: { Authorization: `Bearer ${session}` } });
+        const res = await fetch(`${API}/dashboard/guilds/${guildId}/verified-members`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
         allMembers = await res.json();
         renderMembers(allMembers);
       } catch {}
@@ -220,7 +252,9 @@ import Layout from '../../layouts/Layout.astro';
     async function loadSettings() {
       if (!session || !guildId) return;
       try {
-        const c = await fetch(`${API}/dashboard/guilds/${guildId}/config`, { headers: { Authorization: `Bearer ${session}` } }).then(r => r.json());
+        const c = await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        }).then(r => r.json());
         (document.getElementById('cfg-role') as HTMLInputElement).value = c.verified_role_id || '';
         (document.getElementById('cfg-log') as HTMLInputElement).value = c.log_channel_id || '';
         (document.getElementById('cfg-mod') as HTMLInputElement).value = c.mod_role_id || '';
@@ -239,7 +273,7 @@ import Layout from '../../layouts/Layout.astro';
       if ((document.getElementById('feat-modreview') as HTMLInputElement).checked) f.push('mod_review');
       await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
         body: JSON.stringify({
           verified_role_id: (document.getElementById('cfg-role') as HTMLInputElement).value,
           log_channel_id: (document.getElementById('cfg-log') as HTMLInputElement).value || null,

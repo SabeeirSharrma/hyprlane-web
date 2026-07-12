@@ -1,6 +1,11 @@
+import { supabase } from './supabase';
+
 const API_BASE = import.meta.env.PUBLIC_API_URL || 'https://hyprlane-api.sabplay-idk.workers.dev';
 
-async function request(method: string, path: string, body?: unknown, token?: string) {
+async function request(method: string, path: string, body?: unknown) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
@@ -19,11 +24,11 @@ async function request(method: string, path: string, body?: unknown, token?: str
 }
 
 export const api = {
-  getStatus: (guildId: string, userId: string, token?: string) =>
-    request('GET', `/guilds/${guildId}/members/${userId}/status`, undefined, token),
+  getStatus: (guildId: string, userId: string) =>
+    request('GET', `/guilds/${guildId}/members/${userId}/status`),
 
-  createLink: (guildId: string, userId: string, token?: string) =>
-    request('POST', `/guilds/${guildId}/verification-links`, { discord_id: userId }, token),
+  createLink: (guildId: string, userId: string) =>
+    request('POST', `/guilds/${guildId}/verification-links`, { discord_id: userId }),
 
   validateToken: (token: string) =>
     request('GET', `/verify/${token}`),
@@ -35,24 +40,21 @@ export const api = {
     email?: string;
   }) => request('POST', `/verify/${token}/complete`, data),
 
-  getHlidCard: (userId: string, token?: string) =>
-    request('GET', `/users/${userId}/hlid-card`, undefined, token),
+  getHlidCard: (userId: string) =>
+    request('GET', `/users/${userId}/hlid-card`),
 
-  discordCallback: (code: string, redirectUri?: string) =>
-    request('POST', '/auth/discord/callback', { code, redirect_uri: redirectUri }),
+  getGuildConfig: (guildId: string) =>
+    request('GET', `/dashboard/guilds/${guildId}/config`),
 
-  getGuildConfig: (guildId: string, token: string) =>
-    request('GET', `/dashboard/guilds/${guildId}/config`, undefined, token),
+  updateGuildConfig: (guildId: string, data: unknown) =>
+    request('PUT', `/dashboard/guilds/${guildId}/config`, data),
 
-  updateGuildConfig: (guildId: string, data: unknown, token: string) =>
-    request('PUT', `/dashboard/guilds/${guildId}/config`, data, token),
+  getVerifiedMembers: (guildId: string) =>
+    request('GET', `/dashboard/guilds/${guildId}/verified-members`),
 
-  getVerifiedMembers: (guildId: string, token: string) =>
-    request('GET', `/dashboard/guilds/${guildId}/verified-members`, undefined, token),
+  getGuildStats: (guildId: string) =>
+    request('GET', `/dashboard/guilds/${guildId}/stats`),
 
-  getGuildStats: (guildId: string, token: string) =>
-    request('GET', `/dashboard/guilds/${guildId}/stats`, undefined, token),
-
-  getUserGuilds: (token: string) =>
-    request('GET', '/dashboard/guilds', undefined, token),
+  getUserGuilds: () =>
+    request('GET', '/dashboard/guilds'),
 };

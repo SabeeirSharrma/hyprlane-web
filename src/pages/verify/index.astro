@@ -48,9 +48,12 @@ import Layout from '../../layouts/Layout.astro';
   </div>
 
   <script>
+    import { createClient } from '@supabase/supabase-js';
+
     const API = 'https://hyprlane-api.sabplay-idk.workers.dev';
-    const CID = '1524437831823523850';
-    const REDIRECT = 'https://hyprlane.qd.je/verify/';
+    const supabaseUrl = 'https://reieovanxlrqgdqnsyfq.supabase.co';
+    const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlaWVvdmFueGxycWdkcW5zeWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzExMzgsImV4cCI6MjA5OTM0NzEzOH0.bOgC3L-z21lssiTgiPDzEMI9LiLhQJRTzczmkDnGGJY';
+    const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get('token');
@@ -68,7 +71,7 @@ import Layout from '../../layouts/Layout.astro';
       showState('error');
     }
 
-    // Handle OAuth callback first — code arrives without token
+    // Handle Supabase OAuth callback — code arrives without token
     if (code) {
       handleOAuthCallback(code);
     } else if (urlToken) {
@@ -91,22 +94,31 @@ import Layout from '../../layouts/Layout.astro';
         const data = await res.json();
         if (!data.valid) { showState('expired'); return; }
 
-        // Check if we already have a Discord session for this account
-        const accessToken = sessionStorage.getItem('discord_access_token');
-        const discordUser = sessionStorage.getItem('discord_user');
-        if (accessToken && discordUser) {
-          const user = JSON.parse(discordUser);
-          if (user.id === data.discord_id) {
+        // Check if we already have a Supabase session for this account
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const discordId = session.user.user_metadata?.provider_id;
+          if (discordId === data.discord_id) {
             // Session matches — show challenge
             sessionStorage.removeItem('pending_verify_token');
             showState('challenge');
-            initTurnstile(t, data.discord_id, accessToken, data.guild_id);
+            initTurnstile(t, data.discord_id, session.access_token, data.guild_id);
             return;
           }
         }
 
-        // No session or wrong account — redirect to Discord OAuth
-        window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CID}&redirect_uri=${encodeURIComponent(REDIRECT)}&response_type=code&scope=identify+email`;
+        // No session or wrong account — redirect to Supabase Discord OAuth
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'discord',
+          options: {
+            redirectTo: window.location.origin + window.location.pathname,
+            scopes: 'identify email guilds',
+          },
+        });
+
+        if (error) {
+          showError('Discord login failed. Please try again.');
+        }
       } catch {
         showError('Could not connect to the verification server.');
       }
@@ -115,18 +127,12 @@ import Layout from '../../layouts/Layout.astro';
     async function handleOAuthCallback(code: string) {
       showState('loading');
       try {
-        const res = await fetch(`${API}/auth/discord/callback`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ code, redirect_uri: REDIRECT }),
-        });
-        const data = await res.json();
-        if (data.session_token) {
-          sessionStorage.setItem('session_token', data.session_token);
-          sessionStorage.setItem('discord_user', JSON.stringify(data.user));
-        }
-        if (data.access_token) {
-          sessionStorage.setItem('discord_access_token', data.access_token);
+        // Exchange code via Supabase
+        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+
+        if (error) {
+          showError('Discord login failed. Please try again.');
+          return;
         }
 
         // Clean URL — remove code param
@@ -142,7 +148,7 @@ import Layout from '../../layouts/Layout.astro';
     function initTurnstile(verifyToken: string, discordId: string, accessToken: string, guildId: string) {
       if (typeof (window as any).turnstile !== 'undefined') {
         (window as any).turnstile.render('#turnstile-widget', {
-          sitekey: '0x4AAAAAAAplaceholder', // TODO: replace with real sitekey
+          sitekey: '0x4AAAAAADz2brix3e0aapon',
           callback: () => { document.getElementById('verify-btn')?.removeAttribute('disabled'); },
         });
       } else {
@@ -170,8 +176,7 @@ import Layout from '../../layouts/Layout.astro';
         const data = await res.json();
         if (data.ok) {
           sessionStorage.removeItem('pending_verify_token');
-          sessionStorage.removeItem('discord_access_token');
-          sessionStorage.removeItem('discord_user');
+          await supabase.auth.signOut();
           showState('success');
         } else {
           showError(data.error || 'Verification failed.');
