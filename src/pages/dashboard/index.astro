@@ -168,19 +168,19 @@ import Layout from '../../layouts/Layout.astro';
     });
 
     async function handleCallback(code: string) {
-      showView('loading');
       try {
         const { data, error } = await supabase.auth.exchangeCodeForSession(code);
         if (error) {
+          console.error('Exchange failed:', error);
           showView('login');
           return;
         }
 
-        session = data.session;
+        // Clean URL and reload so checkSession picks up the new session
         window.history.replaceState({}, '', `${base}dashboard/`);
-        showView('guilds');
-        loadGuilds();
-      } catch {
+        window.location.reload();
+      } catch (e) {
+        console.error('Callback error:', e);
         showView('login');
       }
     }
