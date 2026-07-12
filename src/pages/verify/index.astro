@@ -57,7 +57,6 @@ import Layout from '../../layouts/Layout.astro';
 
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get('token');
-    const code = params.get('code');
 
     function showState(name: string) {
       ['loading', 'expired', 'challenge', 'success', 'error'].forEach(s => {
@@ -71,15 +70,17 @@ import Layout from '../../layouts/Layout.astro';
       showState('error');
     }
 
-    // Handle Supabase OAuth callback — code arrives without token
-    if (code) {
-      handleOAuthCallback(code);
-    } else if (urlToken) {
-      // Fresh link — save token, then validate
+    // If Supabase returned tokens in the hash fragment, clean URL and reload
+    if (window.location.hash.includes('access_token')) {
+      window.history.replaceState({}, '', window.location.pathname + window.location.search);
+      window.location.reload();
+    }
+
+    // Entry point
+    if (urlToken) {
       sessionStorage.setItem('pending_verify_token', urlToken);
       validateToken(urlToken);
     } else {
-      // No code, no token — check if we have a saved token from prior redirect
       const saved = sessionStorage.getItem('pending_verify_token');
       if (saved) {
         validateToken(saved);
@@ -111,7 +112,7 @@ import Layout from '../../layouts/Layout.astro';
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'discord',
           options: {
-            redirectTo: window.location.origin + window.location.pathname,
+            redirectTo: window.location.origin + window.location.pathname + '?token=' + t,
             scopes: 'identify email guilds',
           },
         });
@@ -121,27 +122,6 @@ import Layout from '../../layouts/Layout.astro';
         }
       } catch {
         showError('Could not connect to the verification server.');
-      }
-    }
-
-    async function handleOAuthCallback(code: string) {
-      showState('loading');
-      try {
-        // Exchange code via Supabase
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-
-        if (error) {
-          showError('Discord login failed. Please try again.');
-          return;
-        }
-
-        // Clean URL — remove code param
-        window.history.replaceState({}, '', window.location.pathname);
-
-        // Reload — will pick up saved token and session
-        window.location.reload();
-      } catch {
-        showError('Discord login failed. Please try again.');
       }
     }
 

@@ -134,14 +134,27 @@ import Layout from '../../layouts/Layout.astro';
       return null;
     }
 
-    // Check for Supabase OAuth callback
-    const code = new URLSearchParams(window.location.search).get('code');
-    if (code) {
-      handleCallback(code);
-    } else {
-      // Check existing session
-      checkSession();
+    // If there's a hash fragment with tokens, clean URL and reload
+    if (window.location.hash.includes('access_token')) {
+      window.history.replaceState({}, '', `${base}dashboard/`);
+      window.location.reload();
     }
+
+    // Listen for auth state changes (handles implicit flow hash tokens)
+    supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'SIGNED_IN' && s) {
+        session = s;
+        // If we're on the login view, redirect to guilds
+        if (!document.getElementById('view-login')?.classList.contains('hidden')) {
+          window.history.replaceState({}, '', `${base}dashboard/`);
+          showView('guilds');
+          loadGuilds();
+        }
+      }
+    });
+
+    // Check for existing session
+    checkSession();
 
     async function checkSession() {
       const { data: { session: s } } = await supabase.auth.getSession();
@@ -166,24 +179,6 @@ import Layout from '../../layouts/Layout.astro';
         console.error('Login failed:', error);
       }
     });
-
-    async function handleCallback(code: string) {
-      try {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) {
-          console.error('Exchange failed:', error);
-          showView('login');
-          return;
-        }
-
-        // Clean URL and reload so checkSession picks up the new session
-        window.history.replaceState({}, '', `${base}dashboard/`);
-        window.location.reload();
-      } catch (e) {
-        console.error('Callback error:', e);
-        showView('login');
-      }
-    }
 
     async function loadGuilds() {
       if (!session) return;
