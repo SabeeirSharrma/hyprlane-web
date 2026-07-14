@@ -478,8 +478,8 @@ const base = import.meta.env.BASE_URL;
 
     function showAddBotPrompt(guildIdToCheck: string) {
       const botClientId = '1524437831823523850';
-      // Bot invite URL — permissions: 268435456 = Manage Roles + Manage Server + Use Slash Commands
-      const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&permissions=268435456&integration_type=0&scope=bot+applications.commands`;
+      // Permissions: Manage Channels + Manage Roles + Send Messages + Embed Links + View Channels + Use Application Commands
+      const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&permissions=2416035840&integration_type=0&scope=bot+applications.commands`;
 
       // Hide sidebar, show bot-required view
       document.getElementById('sidebar')!.classList.add('hidden');
