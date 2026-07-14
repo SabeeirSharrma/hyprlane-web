@@ -88,6 +88,7 @@ const base = import.meta.env.BASE_URL;
             <h3 class="font-display font-semibold mb-4">Server Configuration</h3>
             <div id="config-summary" class="flex flex-col gap-3 text-sm">
               <div class="flex justify-between"><span class="text-text-secondary">Verified Role</span><span id="cfg-role-display" class="font-mono text-text-primary">—</span></div>
+              <div class="flex justify-between"><span class="text-text-secondary">Verification Channel</span><span id="cfg-verification-display" class="font-mono text-text-primary">—</span></div>
               <div class="flex justify-between"><span class="text-text-secondary">Log Channel</span><span id="cfg-log-display" class="font-mono text-text-primary">—</span></div>
               <div class="flex justify-between"><span class="text-text-secondary">Mod Role</span><span id="cfg-mod-display" class="font-mono text-text-primary">—</span></div>
             </div>
@@ -246,10 +247,17 @@ const base = import.meta.env.BASE_URL;
 
           <div class="card">
             <h3 class="font-display font-semibold mb-4">Channels</h3>
-            <div>
-              <label class="block text-sm font-medium text-text-secondary mb-2">Log Channel</label>
-              <p class="text-xs text-text-muted mb-2">Channel for audit logs and fallback notifications</p>
-              <input type="text" id="cfg-log" class="input" placeholder="Optional" />
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Verification Channel</label>
+                <p class="text-xs text-text-muted mb-2">Channel visible to unverified users with verification instructions</p>
+                <input type="text" id="cfg-verification" class="input" placeholder="Channel ID" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Log Channel</label>
+                <p class="text-xs text-text-muted mb-2">Channel for audit logs and fallback notifications</p>
+                <input type="text" id="cfg-log" class="input" placeholder="Optional" />
+              </div>
             </div>
           </div>
 
@@ -476,6 +484,7 @@ const base = import.meta.env.BASE_URL;
 
         // Config summary
         document.getElementById('cfg-role-display')!.textContent = config.verified_role_id || 'Not set';
+        document.getElementById('cfg-verification-display')!.textContent = config.verification_channel_id || 'None';
         document.getElementById('cfg-log-display')!.textContent = config.log_channel_id || 'None';
         document.getElementById('cfg-mod-display')!.textContent = config.mod_role_id || 'None';
 
@@ -699,6 +708,7 @@ const base = import.meta.env.BASE_URL;
         (document.getElementById('cfg-role') as HTMLInputElement).value = c.verified_role_id || '';
         (document.getElementById('cfg-log') as HTMLInputElement).value = c.log_channel_id || '';
         (document.getElementById('cfg-mod') as HTMLInputElement).value = c.mod_role_id || '';
+        (document.getElementById('cfg-verification') as HTMLInputElement).value = c.verification_channel_id || '';
       } catch {}
     }
 
@@ -714,6 +724,7 @@ const base = import.meta.env.BASE_URL;
           verified_role_id: (document.getElementById('cfg-role') as HTMLInputElement).value,
           log_channel_id: (document.getElementById('cfg-log') as HTMLInputElement).value || null,
           mod_role_id: (document.getElementById('cfg-mod') as HTMLInputElement).value || null,
+          verification_channel_id: (document.getElementById('cfg-verification') as HTMLInputElement).value || null,
         }),
       });
 
