@@ -338,35 +338,61 @@ const base = import.meta.env.BASE_URL;
       if (view === 'settings') loadSettings();
     }
 
-    function parseUrl() {
+    async function parseUrl() {
       // Check for ?guild= query param (from 404.html redirect)
       const params = new URLSearchParams(window.location.search);
       const guildParam = params.get('guild');
       if (guildParam && guildParam !== '') {
-        guildId = guildParam;
-        document.getElementById('sidebar')!.classList.remove('hidden');
-        document.getElementById('main')!.classList.add('ml-56');
-        buildNav(guildId);
-        // Clean URL
-        window.history.replaceState({}, '', `${base}dashboard/${guildId}/`);
-        return 'overview';
+        // Validate access before showing dashboard
+        if (await validateGuildAccess(guildParam)) {
+          guildId = guildParam;
+          document.getElementById('sidebar')!.classList.remove('hidden');
+          document.getElementById('main')!.classList.add('ml-56');
+          buildNav(guildId);
+          window.history.replaceState({}, '', `${base}dashboard/${guildId}/`);
+          return 'overview';
+        } else {
+          // No access — redirect to server list
+          window.history.replaceState({}, '', `${base}dashboard/`);
+          return null;
+        }
       }
 
       // Check for path-based routing
       const path = window.location.pathname.replace(base, '');
       const parts = path.split('/').filter(Boolean);
       if (parts.length >= 2 && parts[0] === 'dashboard') {
-        guildId = parts[1];
-        document.getElementById('sidebar')!.classList.remove('hidden');
-        document.getElementById('main')!.classList.add('ml-56');
-        buildNav(guildId);
-        const sub = parts[2] || '';
-        if (sub === 'members') return 'members';
-        if (sub === 'features') return 'features';
-        if (sub === 'settings') return 'settings';
-        return 'overview';
+        const potentialGuildId = parts[1];
+        // Validate access before showing dashboard
+        if (await validateGuildAccess(potentialGuildId)) {
+          guildId = potentialGuildId;
+          document.getElementById('sidebar')!.classList.remove('hidden');
+          document.getElementById('main')!.classList.add('ml-56');
+          buildNav(guildId);
+          const sub = parts[2] || '';
+          if (sub === 'members') return 'members';
+          if (sub === 'features') return 'features';
+          if (sub === 'settings') return 'settings';
+          return 'overview';
+        } else {
+          // No access — redirect to server list
+          window.history.replaceState({}, '', `${base}dashboard/`);
+          return null;
+        }
       }
       return null;
+    }
+
+    async function validateGuildAccess(guildIdToCheck: string): Promise<boolean> {
+      if (!session) return false;
+      try {
+        const res = await fetch(`${API}/dashboard/guilds`, { headers: authHeaders() });
+        if (!res.ok) return false;
+        const guilds = await res.json();
+        return guilds.some((g: any) => g.id === guildIdToCheck);
+      } catch {
+        return false;
+      }
     }
 
     supabase.auth.onAuthStateChange((event, s) => {
@@ -375,21 +401,8 @@ const base = import.meta.env.BASE_URL;
         if (window.location.hash.includes('access_token')) {
           window.history.replaceState({}, '', `${base}dashboard/`);
         }
-        // Check if we have a guild param to navigate to
-        const params = new URLSearchParams(window.location.search);
-        const guildParam = params.get('guild');
-        if (guildParam) {
-          guildId = guildParam;
-          window.history.replaceState({}, '', `${base}dashboard/${guildId}/`);
-          document.getElementById('sidebar')!.classList.remove('hidden');
-          document.getElementById('main')!.classList.add('ml-56');
-          buildNav(guildId);
-          showView('overview');
-          activateView('overview');
-        } else {
-          showView('guilds');
-          loadGuilds();
-        }
+        // Re-run checkSession to handle guild param
+        checkSession();
       } else if (event === 'SIGNED_OUT') {
         session = null;
         showView('login');
@@ -402,20 +415,15 @@ const base = import.meta.env.BASE_URL;
       const { data: { session: s } } = await supabase.auth.getSession();
       session = s;
 
-      const initial = parseUrl();
+      const initial = await parseUrl();
       if (initial && session) {
         showView('overview');
         activateView(initial);
-      } else if (session) {
-        // Check if we have a guild param but no session yet (will be handled by onAuthStateChange)
-        const params = new URLSearchParams(window.location.search);
-        if (params.get('guild')) {
-          showView('overview');
-        } else {
-          showView('guilds');
-        }
+      } else if (session && !initial) {
+        // Logged in but no valid guild in URL — show server list
+        showView('guilds');
         loadGuilds();
-      } else {
+      } else if (!session) {
         showView('login');
       }
     }
