@@ -49,6 +49,8 @@ const base = import.meta.env.BASE_URL;
         <div id="guild-list" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
+      <div id="view-bot-required" class="hidden"></div>
+
       <div id="view-overview" class="hidden">
         <div class="flex items-center justify-between mb-8">
           <div>
@@ -373,6 +375,13 @@ const base = import.meta.env.BASE_URL;
           document.getElementById('main')!.classList.add('ml-56');
           buildNav(guildId);
           loadGuildInfo(guildId);
+
+          // Check if bot is in the guild
+          if (!(await checkBotInGuild(guildParam))) {
+            showAddBotPrompt(guildParam);
+            return null;
+          }
+
           window.history.replaceState({}, '', `${base}dashboard/${guildId}/`);
           return 'overview';
         } else {
@@ -394,6 +403,13 @@ const base = import.meta.env.BASE_URL;
           document.getElementById('main')!.classList.add('ml-56');
           buildNav(guildId);
           loadGuildInfo(guildId);
+
+          // Check if bot is in the guild
+          if (!(await checkBotInGuild(potentialGuildId))) {
+            showAddBotPrompt(potentialGuildId);
+            return null;
+          }
+
           const sub = parts[2] || '';
           if (sub === 'members') return 'members';
           if (sub === 'features') return 'features';
@@ -446,6 +462,46 @@ const base = import.meta.env.BASE_URL;
       } catch {
         return false;
       }
+    }
+
+    async function checkBotInGuild(guildIdToCheck: string): Promise<boolean> {
+      if (!session) return false;
+      try {
+        const res = await fetch(`${API}/dashboard/guilds/${guildIdToCheck}/bot-status`, { headers: authHeaders() });
+        if (!res.ok) return true; // Assume yes on error
+        const data = await res.json();
+        return data.in_guild;
+      } catch {
+        return true; // Assume yes on network error
+      }
+    }
+
+    function showAddBotPrompt(guildIdToCheck: string) {
+      const botClientId = '1524437831823523850'; // Discord client ID
+      const inviteUrl = `https://discord.com/oauth2/authorize?client_id=${botClientId}&scope=bot%20applications.commands&permissions=268435456`;
+
+      // Hide sidebar, show bot-required view
+      document.getElementById('sidebar')!.classList.add('hidden');
+      document.getElementById('main')!.classList.remove('ml-56');
+
+      document.getElementById('view-bot-required')!.classList.remove('hidden');
+      document.getElementById('view-bot-required')!.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-16">
+          <div class="w-16 h-16 rounded-2xl bg-warning/10 flex items-center justify-center mb-6">
+            <svg class="w-8 h-8 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <h2 class="font-display text-xl font-semibold mb-2">Bot Not in Server</h2>
+          <p class="text-text-secondary text-center max-w-md mb-8">
+            The Hyprlane bot needs to be added to this server before you can manage it.
+          </p>
+          <a href="${inviteUrl}" target="_blank" rel="noopener noreferrer" class="btn-primary px-6 py-3 text-sm">
+            Add Bot to Server
+          </a>
+          <p class="text-text-muted text-xs mt-4">You need Manage Server permission to add the bot</p>
+        </div>
+      `;
     }
 
     supabase.auth.onAuthStateChange((event, s) => {
