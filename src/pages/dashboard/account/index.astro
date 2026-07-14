@@ -16,13 +16,25 @@ import Layout from '../../../layouts/Layout.astro';
       <div class="card">
         <h3 class="font-medium mb-3">Link phone number</h3>
         <p class="text-sm text-text-secondary mb-4">Required by some servers. Your number is stored as a salted hash — never in plain text.</p>
+
+        <div id="phone-linked-state" class="hidden">
+          <div class="flex items-center gap-3">
+            <span class="pill pill-success">Linked</span>
+            <span id="phone-linked-label" class="text-sm text-text-secondary"></span>
+          </div>
+          <button id="phone-unlink-btn" class="btn-danger-sm mt-3">Unlink phone</button>
+        </div>
+
         <div id="phone-form" class="flex flex-col gap-3">
           <input type="tel" id="phone-input" placeholder="+1234567890" class="input" />
           <button id="phone-send-btn" class="btn-primary self-start">Send OTP</button>
         </div>
         <div id="otp-form" class="hidden flex-col gap-3 mt-3">
-          <input type="text" id="otp-input" placeholder="Enter code" class="input" maxlength="6" />
-          <button id="otp-confirm-btn" class="btn-primary self-start">Confirm</button>
+          <input type="text" id="otp-input" placeholder="Enter 6-digit code" class="input" maxlength="6" />
+          <div class="flex gap-2">
+            <button id="otp-confirm-btn" class="btn-primary">Confirm</button>
+            <button id="otp-resend-btn" class="btn-ghost text-sm">Resend code</button>
+          </div>
         </div>
         <p id="phone-status" class="text-sm mt-2 hidden"></p>
       </div>
@@ -72,6 +84,23 @@ import Layout from '../../../layouts/Layout.astro';
       const meta = session.user?.user_metadata || {};
       document.getElementById('acct-username').textContent = meta.full_name || meta.custom_claims?.global_name || session.user?.email || '—';
       document.getElementById('acct-discord-id').textContent = meta.provider_id ? `ID: ${meta.provider_id}` : '—';
+      checkPhoneStatus();
+    }
+
+    async function checkPhoneStatus() {
+      const meta = session.user?.user_metadata || {};
+      const discordId = meta.provider_id;
+      if (!discordId) return;
+
+      try {
+        const res = await fetch(`${API}/bot/${discordId}/hlid-card`, { headers: authHeaders() });
+        if (!res.ok) return;
+        const card = await res.json();
+        if (card.phone_linked) {
+          document.getElementById('phone-form')?.classList.add('hidden');
+          document.getElementById('phone-linked-state')!.classList.remove('hidden');
+        }
+      } catch {}
     }
 
     document.getElementById('logout-btn')?.addEventListener('click', async () => {
@@ -145,5 +174,53 @@ import Layout from '../../../layouts/Layout.astro';
       el.className = `text-sm mt-2 ${type === 'success' ? 'text-success' : 'text-danger'}`;
       el.classList.remove('hidden');
     }
+
+    // Resend OTP
+    document.getElementById('otp-resend-btn')?.addEventListener('click', async () => {
+      if (!pendingPhone) return;
+      const meta = session.user?.user_metadata || {};
+      const discordId = meta.provider_id;
+      if (!discordId) return;
+
+      try {
+        const res = await fetch(`${API}/verify/phone/${discordId}/otp`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...authHeaders() },
+          body: JSON.stringify({ phone: pendingPhone }),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showPhoneStatus('New code sent.', 'success');
+        } else {
+          showPhoneStatus(data.error || 'Failed to resend', 'danger');
+        }
+      } catch {
+        showPhoneStatus('Could not reach server', 'danger');
+      }
+    });
+
+    // Unlink phone
+    document.getElementById('phone-unlink-btn')?.addEventListener('click', async () => {
+      const meta = session.user?.user_metadata || {};
+      const discordId = meta.provider_id;
+      if (!discordId) return;
+
+      try {
+        const res = await fetch(`${API}/verify/phone/${discordId}`, {
+          method: 'DELETE',
+          headers: authHeaders(),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          document.getElementById('phone-linked-state')?.classList.add('hidden');
+          document.getElementById('phone-form')?.classList.remove('hidden');
+          showPhoneStatus('Phone unlinked.', 'success');
+        } else {
+          showPhoneStatus(data.error || 'Failed to unlink', 'danger');
+        }
+      } catch {
+        showPhoneStatus('Could not reach server', 'danger');
+      }
+    });
   </script>
 </Layout>
