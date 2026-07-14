@@ -42,13 +42,31 @@ const base = import.meta.env.BASE_URL;
           <div class="card"><p class="text-sm text-text-secondary mb-1">Flagged accounts</p><p id="stat-flagged" class="text-3xl font-display font-semibold text-danger">0</p></div>
           <div class="card"><p class="text-sm text-text-secondary mb-1">Features</p><p id="stat-features" class="text-lg font-medium text-text-primary">—</p></div>
         </div>
+        <div id="flagged-list" class="hidden">
+          <h2 class="font-display text-lg font-semibold mb-4">Flagged Accounts</h2>
+          <div id="flagged-items" class="flex flex-col"></div>
+        </div>
       </div>
 
       <div id="view-members" class="hidden">
-        <h1 class="font-display text-2xl font-semibold tracking-tight mb-6">Verified Members</h1>
+        <div class="flex items-center justify-between mb-6">
+          <h1 class="font-display text-2xl font-semibold tracking-tight">Verified Members</h1>
+          <div class="flex gap-2">
+            <button id="tab-verified" class="tab tab-active" data-tab="verified">Verified</button>
+            <button id="tab-pending" class="tab" data-tab="pending">Pending Review</button>
+          </div>
+        </div>
         <input type="text" id="member-search" placeholder="Search by Discord ID..." class="input max-w-sm mb-6" />
-        <div id="members-empty" class="hidden text-text-secondary py-12 text-center">No one's verified here yet.</div>
-        <div id="members-list" class="hidden flex flex-col"></div>
+
+        <div id="tab-content-verified" class="hidden">
+          <div id="members-empty" class="hidden text-text-secondary py-12 text-center">No one's verified here yet.</div>
+          <div id="members-list" class="hidden flex flex-col"></div>
+        </div>
+
+        <div id="tab-content-pending" class="hidden">
+          <div id="pending-empty" class="hidden text-text-secondary py-12 text-center">No pending reviews.</div>
+          <div id="pending-list" class="hidden flex flex-col"></div>
+        </div>
       </div>
 
       <div id="view-settings" class="hidden">
@@ -64,6 +82,10 @@ const base = import.meta.env.BASE_URL;
               <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="feat-phone" class="w-4 h-4 accent-accent rounded" /><span class="text-sm">Phone number required</span></label>
               <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="feat-modreview" class="w-4 h-4 accent-accent rounded" /><span class="text-sm">Moderator review required</span></label>
             </div>
+          </div>
+          <div id="modreview-config" class="hidden">
+            <label class="block text-sm font-medium text-text-secondary mb-2">Mod Review Channel ID</label>
+            <input type="text" id="cfg-modreview-channel" class="input" placeholder="Channel for mod reviews" />
           </div>
           <div id="save-ok" class="hidden text-sm text-success">Saved.</div>
           <button type="submit" class="btn-primary self-start">Save settings</button>
@@ -86,6 +108,8 @@ const base = import.meta.env.BASE_URL;
     let session: any = null;
     let guildId: string | null = null;
     let allMembers: any[] = [];
+    let allPending: any[] = [];
+    let currentTab = 'verified';
 
     function authHeaders() {
       return {
@@ -151,12 +175,9 @@ const base = import.meta.env.BASE_URL;
       return null;
     }
 
-    // Supabase with implicit flow auto-parses #access_token on init.
-    // onAuthStateChange fires when session is ready.
     supabase.auth.onAuthStateChange((event, s) => {
       if (event === 'SIGNED_IN' && s) {
         session = s;
-        // Clean URL if tokens were in hash
         if (window.location.hash.includes('access_token')) {
           window.history.replaceState({}, '', `${base}dashboard/`);
         }
@@ -168,7 +189,6 @@ const base = import.meta.env.BASE_URL;
       }
     });
 
-    // Check for an existing session (covers page reloads)
     checkSession();
 
     async function checkSession() {
@@ -237,6 +257,31 @@ const base = import.meta.env.BASE_URL;
         document.getElementById('stat-flagged')!.textContent = String(stats.flagged_count ?? 0);
         const f = config.enrolled_features || [];
         document.getElementById('stat-features')!.textContent = f.length ? f.join(', ') : 'Default';
+
+        // Load flagged accounts
+        if (stats.flagged_count > 0) {
+          const flaggedRes = await fetch(`${API}/dashboard/guilds/${guildId}/flagged-members`, { headers: authHeaders() });
+          if (flaggedRes.ok) {
+            const flagged = await flaggedRes.json();
+            const list = document.getElementById('flagged-list')!;
+            const items = document.getElementById('flagged-items')!;
+            if (flagged.length > 0) {
+              list.classList.remove('hidden');
+              items.innerHTML = flagged.map((m: any) => `
+                <div class="table-row flex items-center justify-between py-3 px-4">
+                  <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-danger/15 flex items-center justify-center text-danger text-xs font-mono">${m.discord_id.slice(-4)}</div>
+                    <div>
+                      <p class="text-sm font-medium">${m.discord_id}</p>
+                      <p class="text-xs text-text-muted">${m.flagged_reason || 'unknown'}</p>
+                    </div>
+                  </div>
+                  <span class="pill pill-danger">${m.status}</span>
+                </div>
+              `).join('');
+            }
+          }
+        }
       } catch {}
     }
 
@@ -246,8 +291,11 @@ const base = import.meta.env.BASE_URL;
         const res = await fetch(`${API}/dashboard/guilds/${guildId}/verified-members`, {
           headers: authHeaders(),
         });
-        allMembers = await res.json();
+        const members = await res.json();
+        allMembers = members.filter((m: any) => m.guild_overrides?.[guildId]?.local_status !== 'pending_mod_review');
+        allPending = members.filter((m: any) => m.guild_overrides?.[guildId]?.local_status === 'pending_mod_review');
         renderMembers(allMembers);
+        renderPending(allPending);
       } catch {}
     }
 
@@ -262,14 +310,86 @@ const base = import.meta.env.BASE_URL;
             <div class="w-8 h-8 rounded-full bg-bg-surface-raised flex items-center justify-center text-text-muted text-xs font-mono">${m.discord_id.slice(-4)}</div>
             <div><p class="text-sm font-medium">${m.discord_id}</p><p class="text-xs text-text-muted font-mono">${m.verified_at ? new Date(m.verified_at).toLocaleDateString() : '—'}</p></div>
           </div>
-          <div class="flex items-center gap-3"><span class="pill pill-success">verified</span>${m.phone_linked ? '<span class="pill pill-success">phone</span>' : ''}</div>
+          <div class="flex items-center gap-3">
+            <span class="pill pill-success">verified</span>
+            ${m.phone_linked ? '<span class="pill pill-success">phone</span>' : ''}
+            <button class="btn-danger-sm revoke-btn" data-id="${m.discord_id}">Revoke</button>
+          </div>
         </div>
       `).join('');
+
+      list.querySelectorAll('.revoke-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = (e.currentTarget as HTMLElement).dataset.id!;
+          if (!confirm(`Revoke verification for ${id}?`)) return;
+          await fetch(`${API}/dashboard/guilds/${guildId}/members/${id}/revoke`, {
+            method: 'POST',
+            headers: authHeaders(),
+          });
+          loadMembers();
+        });
+      });
     }
+
+    function renderPending(members: any[]) {
+      const empty = document.getElementById('pending-empty')!;
+      const list = document.getElementById('pending-list')!;
+      if (!members.length) { empty.classList.remove('hidden'); list.classList.add('hidden'); return; }
+      empty.classList.add('hidden'); list.classList.remove('hidden');
+      list.innerHTML = members.map(m => `
+        <div class="table-row flex items-center justify-between py-3 px-4">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-warning/15 flex items-center justify-center text-warning text-xs font-mono">${m.discord_id.slice(-4)}</div>
+            <div><p class="text-sm font-medium">${m.discord_id}</p><p class="text-xs text-text-muted font-mono">Pending mod review</p></div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="btn-success-sm approve-btn" data-id="${m.discord_id}">Approve</button>
+            <button class="btn-danger-sm reject-btn" data-id="${m.discord_id}">Reject</button>
+          </div>
+        </div>
+      `).join('');
+
+      list.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = (e.currentTarget as HTMLElement).dataset.id!;
+          await fetch(`${API}/dashboard/guilds/${guildId}/members/${id}/setstatus`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify({ status: 'verified' }),
+          });
+          loadMembers();
+        });
+      });
+
+      list.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = (e.currentTarget as HTMLElement).dataset.id!;
+          if (!confirm(`Reject and unverify ${id}?`)) return;
+          await fetch(`${API}/dashboard/guilds/${guildId}/members/${id}/setstatus`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...authHeaders() },
+            body: JSON.stringify({ status: 'unverified' }),
+          });
+          loadMembers();
+        });
+      });
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        const target = (e.currentTarget as HTMLElement).dataset.tab!;
+        currentTab = target;
+        document.querySelectorAll('.tab').forEach(t => t.classList.toggle('tab-active', t === e.currentTarget));
+        document.getElementById('tab-content-verified')!.classList.toggle('hidden', target !== 'verified');
+        document.getElementById('tab-content-pending')!.classList.toggle('hidden', target !== 'pending');
+      });
+    });
 
     document.getElementById('member-search')?.addEventListener('input', (e) => {
       const q = (e.target as HTMLInputElement).value.toLowerCase();
       renderMembers(allMembers.filter(m => m.discord_id.includes(q)));
+      renderPending(allPending.filter(m => m.discord_id.includes(q)));
     });
 
     async function loadSettings() {
@@ -285,8 +405,23 @@ const base = import.meta.env.BASE_URL;
         (document.getElementById('feat-challenge') as HTMLInputElement).checked = f.includes('require_challenge');
         (document.getElementById('feat-phone') as HTMLInputElement).checked = f.includes('phone_required');
         (document.getElementById('feat-modreview') as HTMLInputElement).checked = f.includes('mod_review');
+
+        // Show/hide mod review config
+        const modreviewConfig = document.getElementById('modreview-config')!;
+        if (f.includes('mod_review')) {
+          modreviewConfig.classList.remove('hidden');
+          (document.getElementById('cfg-modreview-channel') as HTMLInputElement).value = c.feature_config?.mod_review?.channel_id || '';
+        } else {
+          modreviewConfig.classList.add('hidden');
+        }
       } catch {}
     }
+
+    // Toggle mod review config visibility
+    document.getElementById('feat-modreview')?.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      document.getElementById('modreview-config')!.classList.toggle('hidden', !checked);
+    });
 
     document.getElementById('settings-form')?.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -294,6 +429,13 @@ const base = import.meta.env.BASE_URL;
       if ((document.getElementById('feat-challenge') as HTMLInputElement).checked) f.push('require_challenge');
       if ((document.getElementById('feat-phone') as HTMLInputElement).checked) f.push('phone_required');
       if ((document.getElementById('feat-modreview') as HTMLInputElement).checked) f.push('mod_review');
+
+      const featureConfig: any = {};
+      if (f.includes('mod_review')) {
+        const channelId = (document.getElementById('cfg-modreview-channel') as HTMLInputElement).value;
+        if (channelId) featureConfig.mod_review = { channel_id: channelId };
+      }
+
       await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
@@ -302,6 +444,7 @@ const base = import.meta.env.BASE_URL;
           log_channel_id: (document.getElementById('cfg-log') as HTMLInputElement).value || null,
           mod_role_id: (document.getElementById('cfg-mod') as HTMLInputElement).value || null,
           enrolled_features: f,
+          feature_config: featureConfig,
         }),
       });
       const ok = document.getElementById('save-ok')!;

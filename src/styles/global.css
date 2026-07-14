@@ -103,9 +103,77 @@
     color: var(--color-success);
   }
 
+  .pill-danger {
+    background-color: color-mix(in srgb, var(--color-danger) 15%, transparent);
+    color: var(--color-danger);
+  }
+
+  .pill-warning {
+    background-color: color-mix(in srgb, var(--color-warning) 15%, transparent);
+    color: var(--color-warning);
+  }
+
   .pill-muted {
     background-color: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
     color: var(--color-text-muted);
+  }
+
+  .btn-danger-sm {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background-color: color-mix(in srgb, var(--color-danger) 15%, transparent);
+    color: var(--color-danger);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-danger) 25%, transparent);
+    }
+  }
+
+  .btn-success-sm {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    background-color: color-mix(in srgb, var(--color-success) 15%, transparent);
+    color: var(--color-success);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 150ms ease;
+    &:hover {
+      background-color: color-mix(in srgb, var(--color-success) 25%, transparent);
+    }
+  }
+
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: 6px;
+    border: 1px solid var(--color-border-subtle);
+    cursor: pointer;
+    transition: all 150ms ease;
+    &:hover {
+      color: var(--color-text-primary);
+      border-color: var(--color-border-strong);
+    }
+  }
+
+  .tab-active {
+    background-color: color-mix(in srgb, var(--color-accent) 15%, transparent);
+    color: var(--color-accent);
+    border-color: var(--color-accent);
   }
 
   .input {
