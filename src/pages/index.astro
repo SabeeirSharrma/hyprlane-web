@@ -56,6 +56,114 @@ const base = import.meta.env.BASE_URL;
     </div>
   </section>
 
+  <!-- Features -->
+  <section class="max-w-[1120px] mx-auto px-6 py-24 border-t border-border-subtle">
+    <h2 class="font-display text-3xl font-semibold tracking-tight mb-4">Features</h2>
+    <p class="text-text-secondary mb-12 max-w-xl">Everything you need to keep your server safe, with premium options for power users.</p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Free features -->
+      <div class="card">
+        <div class="w-10 h-10 rounded-lg bg-success/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Cross-Server Identity</h3>
+        <p class="text-sm text-text-secondary">Verify once, recognized everywhere. No repeated gates.</p>
+      </div>
+
+      <div class="card">
+        <div class="w-10 h-10 rounded-lg bg-success/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Disposable Email Detection</h3>
+        <p class="text-sm text-text-secondary">Block throwaway accounts at the door.</p>
+      </div>
+
+      <div class="card">
+        <div class="w-10 h-10 rounded-lg bg-success/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Moderator Review</h3>
+        <p class="text-sm text-text-secondary">Require manual approval before granting access.</p>
+      </div>
+
+      <div class="card">
+        <div class="w-10 h-10 rounded-lg bg-success/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Re-Verification</h3>
+        <p class="text-sm text-text-secondary">Require challenge on every join for high-risk servers.</p>
+      </div>
+
+      <!-- Paid features -->
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-3 right-3">
+          <span class="pill pill-accent text-xs">PRO</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Booster Bypass</h3>
+        <p class="text-sm text-text-secondary">Skip verification for server boosters automatically.</p>
+      </div>
+
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-3 right-3">
+          <span class="pill pill-accent text-xs">PRO</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Raid Protection</h3>
+        <p class="text-sm text-text-secondary">Monitor join rate and lock down on spikes.</p>
+      </div>
+
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-3 right-3">
+          <span class="pill pill-accent text-xs">PRO</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Audit Export</h3>
+        <p class="text-sm text-text-secondary">Export verification events to your own audit trail.</p>
+      </div>
+
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-3 right-3">
+          <span class="pill pill-accent text-xs">PRO</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Custom Timeout</h3>
+        <p class="text-sm text-text-secondary">Override verification link expiry time.</p>
+      </div>
+
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-3 right-3">
+          <span class="pill pill-accent text-xs">PRO</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Vanity URL</h3>
+        <p class="text-sm text-text-secondary">Custom slug on hyprlane.qd.je/s/your-server.</p>
+      </div>
+
+      <div class="card relative overflow-hidden">
+        <div class="absolute top-3 right-3">
+          <span class="pill pill-accent text-xs">PRO</span>
+        </div>
+        <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center mb-4">
+          <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+        </div>
+        <h3 class="font-display font-semibold mb-2">Custom Domain</h3>
+        <p class="text-sm text-text-secondary">Use your own domain for verification links.</p>
+      </div>
+    </div>
+  </section>
+
   <!-- Built in the open -->
   <section class="max-w-[1120px] mx-auto px-6 py-24 border-t border-border-subtle">
     <h2 class="font-display text-3xl font-semibold tracking-tight mb-4">Built in the open</h2>
