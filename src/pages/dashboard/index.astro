@@ -186,6 +186,10 @@ import Layout from '../../layouts/Layout.astro';
         const res = await fetch(`${API}/dashboard/guilds`, {
           headers: { Authorization: `Bearer ${session.access_token}` },
         });
+        if (!res.ok) {
+          console.error('loadGuilds failed:', res.status, await res.text());
+          return;
+        }
         const guilds = await res.json();
         document.getElementById('guild-list')!.innerHTML = guilds.map((g: any) => `
           <a href="${base}dashboard/${g.id}/" class="card flex items-center gap-4 hover:border-accent transition-colors">
@@ -193,8 +197,8 @@ import Layout from '../../layouts/Layout.astro';
             <span class="font-medium">${g.name}</span>
           </a>
         `).join('');
-      } catch {
-        showView('login');
+      } catch (e) {
+        console.error('loadGuilds error:', e);
       }
     }
 
