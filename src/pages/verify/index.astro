@@ -167,15 +167,20 @@ import Layout from '../../layouts/Layout.astro';
       }
     }
 
+    let turnstileToken = '';
+
     function initTurnstile(verifyToken: string, discordId: string, accessToken: string, guildId: string) {
       if (typeof (window as any).turnstile !== 'undefined') {
         (window as any).turnstile.render('#turnstile-widget', {
           sitekey: '0x4AAAAAADz2brix3e0aapon',
-          callback: () => { document.getElementById('verify-btn')?.removeAttribute('disabled'); },
+          callback: (token: string) => {
+            turnstileToken = token;
+            document.getElementById('verify-btn')?.removeAttribute('disabled');
+          },
         });
       } else {
-        // Turnstile script failed to load — skip for dev
-        document.getElementById('verify-btn')?.removeAttribute('disabled');
+        // Turnstile script failed to load — block verification
+        showError('Security challenge failed to load. Please refresh.');
       }
       document.getElementById('verify-btn')?.addEventListener('click', () => {
         completeVerification(verifyToken, discordId, accessToken);
@@ -192,7 +197,7 @@ import Layout from '../../layouts/Layout.astro';
           body: JSON.stringify({
             access_token: accessToken,
             discord_id: discordId,
-            challenge_passed: true,
+            turnstile_token: turnstileToken,
           }),
         });
         const data = await res.json();
