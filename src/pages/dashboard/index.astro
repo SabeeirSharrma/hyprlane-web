@@ -1,5 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
+const base = import.meta.env.BASE_URL;
 ---
 
 <Layout title="Dashboard" description="Manage your server's Hyprlane verification">
@@ -24,9 +25,14 @@ import Layout from '../../layouts/Layout.astro';
       </div>
 
       <div id="view-guilds" class="hidden">
-        <h1 class="font-display text-3xl font-semibold mb-2">Select a server</h1>
-        <p class="text-text-secondary mb-8">Choose which server to manage.</p>
-        <div id="guild-list" class="flex flex-col gap-3 max-w-lg"></div>
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-3xl font-semibold mb-1">Your servers</h1>
+            <p class="text-text-secondary">Choose which server to manage.</p>
+          </div>
+          <a href={`${base}dashboard/account/`} class="btn-ghost text-sm">Account</a>
+        </div>
+        <div id="guild-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
       <div id="view-overview" class="hidden">
@@ -62,33 +68,6 @@ import Layout from '../../layouts/Layout.astro';
           <div id="save-ok" class="hidden text-sm text-success">Saved.</div>
           <button type="submit" class="btn-primary self-start">Save settings</button>
         </form>
-      </div>
-
-      <div id="view-account" class="hidden">
-        <h1 class="font-display text-2xl font-semibold tracking-tight mb-6">Account</h1>
-        <div class="max-w-xl flex flex-col gap-6">
-          <div class="card">
-            <p class="text-sm text-text-secondary mb-1">Logged in as</p>
-            <p id="acct-username" class="text-lg font-medium">—</p>
-            <p id="acct-discord-id" class="text-xs text-text-muted font-mono mt-1">—</p>
-          </div>
-
-          <div class="card">
-            <h3 class="font-medium mb-3">Link phone number</h3>
-            <p class="text-sm text-text-secondary mb-4">Required by some servers. Your number is stored as a salted hash — never in plain text.</p>
-            <div id="phone-form" class="flex flex-col gap-3">
-              <input type="tel" id="phone-input" placeholder="+1234567890" class="input" />
-              <button id="phone-send-btn" class="btn-primary self-start">Send OTP</button>
-            </div>
-            <div id="otp-form" class="hidden flex-col gap-3 mt-3">
-              <input type="text" id="otp-input" placeholder="Enter code" class="input" maxlength="6" />
-              <button id="otp-confirm-btn" class="btn-primary self-start">Confirm</button>
-            </div>
-            <p id="phone-status" class="text-sm mt-2 hidden"></p>
-          </div>
-
-          <button id="logout-btn" class="btn-ghost self-start text-danger hover:text-danger">Log out</button>
-        </div>
       </div>
     </main>
   </div>
@@ -126,7 +105,6 @@ import Layout from '../../layouts/Layout.astro';
         { id: 'overview', label: 'Overview', sub: '' },
         { id: 'members', label: 'Members', sub: 'members' },
         { id: 'settings', label: 'Settings', sub: 'settings' },
-        { id: 'account', label: 'Account', sub: 'account' },
       ];
       const currentHash = window.location.hash.replace('#', '');
       nav.innerHTML = items.map(v => {
@@ -155,7 +133,6 @@ import Layout from '../../layouts/Layout.astro';
       if (view === 'overview') loadOverview();
       if (view === 'members') loadMembers();
       if (view === 'settings') loadSettings();
-      if (view === 'account') loadAccount();
     }
 
     function parseUrl() {
@@ -169,7 +146,6 @@ import Layout from '../../layouts/Layout.astro';
         const sub = parts[2] || '';
         if (sub === 'members') return 'members';
         if (sub === 'settings') return 'settings';
-        if (sub === 'account') return 'account';
         return 'overview';
       }
       return null;
@@ -231,9 +207,18 @@ import Layout from '../../layouts/Layout.astro';
         }
         const guilds = await res.json();
         document.getElementById('guild-list')!.innerHTML = guilds.map((g: any) => `
-          <a href="${base}dashboard/${g.id}/" class="card flex items-center gap-4 hover:border-accent transition-colors">
-            ${g.icon ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png" class="w-10 h-10 rounded-full" alt="" />` : `<div class="w-10 h-10 rounded-full bg-bg-surface-raised flex items-center justify-center text-text-muted text-sm font-medium">${g.name.charAt(0)}</div>`}
-            <span class="font-medium">${g.name}</span>
+          <a href="${base}dashboard/${g.id}/" class="card group hover:border-accent transition-all hover:scale-[1.02]">
+            <div class="flex items-center gap-4 mb-3">
+              ${g.icon ? `<img src="https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png" class="w-12 h-12 rounded-full" alt="" />` : `<div class="w-12 h-12 rounded-full bg-accent/15 flex items-center justify-center text-accent font-display text-lg font-semibold">${g.name.charAt(0)}</div>`}
+              <div class="min-w-0">
+                <p class="font-medium truncate group-hover:text-accent transition-colors">${g.name}</p>
+                <p class="text-xs text-text-muted font-mono">ID: ${g.id}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-2 text-xs text-text-secondary">
+              <span class="pill">Manage</span>
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
           </a>
         `).join('');
       } catch (e) {
@@ -323,85 +308,5 @@ import Layout from '../../layouts/Layout.astro';
       ok.classList.remove('hidden');
       setTimeout(() => ok.classList.add('hidden'), 2000);
     });
-
-    // --- Account ---
-    function loadAccount() {
-      if (!session) return;
-      const meta = session.user?.user_metadata || {};
-      document.getElementById('acct-username').textContent = meta.full_name || meta.custom_claims?.global_name || session.user?.email || '—';
-      document.getElementById('acct-discord-id').textContent = meta.provider_id ? `ID: ${meta.provider_id}` : '—';
-    }
-
-    document.getElementById('logout-btn')?.addEventListener('click', async () => {
-      await supabase.auth.signOut();
-    });
-
-    // --- Phone linking ---
-    let pendingPhone = '';
-
-    document.getElementById('phone-send-btn')?.addEventListener('click', async () => {
-      const phone = (document.getElementById('phone-input') as HTMLInputElement).value.trim();
-      if (!phone || !phone.startsWith('+')) {
-        showPhoneStatus('Use E.164 format (e.g. +1234567890)', 'danger');
-        return;
-      }
-      pendingPhone = phone;
-      const meta = session.user?.user_metadata || {};
-      const discordId = meta.provider_id;
-      if (!discordId) { showPhoneStatus('Not logged in', 'danger'); return; }
-
-      try {
-        const res = await fetch(`${API}/verify/phone/${discordId}/otp`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({ phone }),
-        });
-        const data = await res.json();
-        if (data.ok) {
-          document.getElementById('phone-form')?.classList.add('hidden');
-          document.getElementById('otp-form')?.classList.remove('hidden');
-          showPhoneStatus('Code sent. Check your messages.', 'success');
-        } else {
-          showPhoneStatus(data.error || 'Failed to send code', 'danger');
-        }
-      } catch {
-        showPhoneStatus('Could not reach server', 'danger');
-      }
-    });
-
-    document.getElementById('otp-confirm-btn')?.addEventListener('click', async () => {
-      const otp = (document.getElementById('otp-input') as HTMLInputElement).value.trim();
-      if (!otp || otp.length < 4) {
-        showPhoneStatus('Enter the code', 'danger');
-        return;
-      }
-      const meta = session.user?.user_metadata || {};
-      const discordId = meta.provider_id;
-
-      try {
-        const res = await fetch(`${API}/verify/phone/${discordId}/confirm`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', ...authHeaders() },
-          body: JSON.stringify({ phone: pendingPhone, otp }),
-        });
-        const data = await res.json();
-        if (data.ok) {
-          showPhoneStatus('Phone linked!', 'success');
-          document.getElementById('otp-form')?.classList.add('hidden');
-          document.getElementById('phone-form')?.classList.add('hidden');
-        } else {
-          showPhoneStatus(data.error || 'Verification failed', 'danger');
-        }
-      } catch {
-        showPhoneStatus('Could not reach server', 'danger');
-      }
-    });
-
-    function showPhoneStatus(msg: string, type: 'success' | 'danger') {
-      const el = document.getElementById('phone-status')!;
-      el.textContent = msg;
-      el.className = `text-sm mt-2 ${type === 'success' ? 'text-success' : 'text-danger'}`;
-      el.classList.remove('hidden');
-    }
   </script>
 </Layout>
