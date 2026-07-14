@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0;url=/dashboard/?redirect=%2F">
+  <title>Redirecting...</title>
+</head>
+<body>
+  <script>
+    // Extract the original path and redirect to dashboard with it
+    var path = window.location.pathname;
+    var hash = window.location.hash;
+    // If it's a /dashboard/{id} path, preserve it
+    if (path.startsWith('/dashboard/')) {
+      window.location.replace('/dashboard/?guild=' + encodeURIComponent(path.replace('/dashboard/', '').replace(/\/$/, '')) + hash);
+    } else {
+      window.location.replace('/');
+    }
+  </script>
+</body>
+</html>
