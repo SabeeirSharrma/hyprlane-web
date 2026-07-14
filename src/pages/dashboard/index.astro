@@ -81,6 +81,13 @@ import Layout from '../../layouts/Layout.astro';
     let guildId: string | null = null;
     let allMembers: any[] = [];
 
+    function authHeaders() {
+      return {
+        Authorization: `Bearer ${session?.access_token}`,
+        'X-Discord-Token': session?.provider_token || '',
+      };
+    }
+
     function showView(name: string) {
       document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
       document.getElementById(`view-${name}`)?.classList.remove('hidden');
@@ -184,7 +191,7 @@ import Layout from '../../layouts/Layout.astro';
       if (!session) return;
       try {
         const res = await fetch(`${API}/dashboard/guilds`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: authHeaders(),
         });
         if (!res.ok) {
           console.error('loadGuilds failed:', res.status, await res.text());
@@ -206,8 +213,8 @@ import Layout from '../../layouts/Layout.astro';
       if (!session || !guildId) return;
       try {
         const [stats, config] = await Promise.all([
-          fetch(`${API}/dashboard/guilds/${guildId}/stats`, { headers: { Authorization: `Bearer ${session.access_token}` } }).then(r => r.json()),
-          fetch(`${API}/dashboard/guilds/${guildId}/config`, { headers: { Authorization: `Bearer ${session.access_token}` } }).then(r => r.json()),
+          fetch(`${API}/dashboard/guilds/${guildId}/stats`, { headers: authHeaders() }).then(r => r.json()),
+          fetch(`${API}/dashboard/guilds/${guildId}/config`, { headers: authHeaders() }).then(r => r.json()),
         ]);
         document.getElementById('stat-verified')!.textContent = String(stats.verified_count ?? 0);
         document.getElementById('stat-flagged')!.textContent = String(stats.flagged_count ?? 0);
@@ -220,7 +227,7 @@ import Layout from '../../layouts/Layout.astro';
       if (!session || !guildId) return;
       try {
         const res = await fetch(`${API}/dashboard/guilds/${guildId}/verified-members`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: authHeaders(),
         });
         allMembers = await res.json();
         renderMembers(allMembers);
@@ -252,7 +259,7 @@ import Layout from '../../layouts/Layout.astro';
       if (!session || !guildId) return;
       try {
         const c = await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: authHeaders(),
         }).then(r => r.json());
         (document.getElementById('cfg-role') as HTMLInputElement).value = c.verified_role_id || '';
         (document.getElementById('cfg-log') as HTMLInputElement).value = c.log_channel_id || '';
@@ -272,7 +279,7 @@ import Layout from '../../layouts/Layout.astro';
       if ((document.getElementById('feat-modreview') as HTMLInputElement).checked) f.push('mod_review');
       await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
           verified_role_id: (document.getElementById('cfg-role') as HTMLInputElement).value,
           log_channel_id: (document.getElementById('cfg-log') as HTMLInputElement).value || null,

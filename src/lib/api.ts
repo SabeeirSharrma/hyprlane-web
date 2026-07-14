@@ -4,13 +4,15 @@ const API_BASE = import.meta.env.PUBLIC_API_URL || 'https://hyprlane-api.sabplay
 
 async function request(method: string, path: string, body?: unknown) {
   const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token;
 
   const res = await fetch(`${API_BASE}${path}`, {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(session ? {
+        Authorization: `Bearer ${session.access_token}`,
+        'X-Discord-Token': session.provider_token || '',
+      } : {}),
     },
     body: body ? JSON.stringify(body) : undefined,
   });
