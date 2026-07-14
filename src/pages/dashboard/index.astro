@@ -222,6 +222,163 @@ const base = import.meta.env.BASE_URL;
           </div>
         </div>
 
+        <div class="mt-8 mb-6">
+          <div class="flex items-center gap-2 mb-4">
+            <h2 class="font-display text-lg font-semibold">Premium Features</h2>
+            <span class="pill pill-accent">PRO</span>
+          </div>
+          <p class="text-text-secondary text-sm">Advanced features for power users. Requires a paid plan.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Booster Bypass</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-booster" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Skip verification for users currently boosting the server.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-danger/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-danger" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Raid Protection</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-raid" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Monitor join rate and lock down on spikes.</p>
+                <div id="raid-config" class="hidden mt-4 pt-4 border-t border-border-subtle">
+                  <div class="grid grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-sm font-medium text-text-secondary mb-1">Window (seconds)</label>
+                      <input type="number" id="cfg-raid-window" class="input" value="60" min="10" max="300" />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-text-secondary mb-1">Threshold</label>
+                      <input type="number" id="cfg-raid-threshold" class="input" value="10" min="3" max="100" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Audit Export</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-audit" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Export verification events to your own audit trail.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Custom Timeout</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-timeout" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Override the default verification link expiry time.</p>
+                <div id="timeout-config" class="hidden mt-4 pt-4 border-t border-border-subtle">
+                  <label class="block text-sm font-medium text-text-secondary mb-2">Timeout (minutes)</label>
+                  <input type="number" id="cfg-timeout-minutes" class="input" value="10" min="1" max="60" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Vanity URL</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-vanity" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Custom slug on hyprlane.qd.je/s/your-server.</p>
+                <div id="vanity-config" class="hidden mt-4 pt-4 border-t border-border-subtle">
+                  <label class="block text-sm font-medium text-text-secondary mb-2">Slug</label>
+                  <div class="flex items-center gap-2">
+                    <span class="text-text-muted text-sm">hyprlane.qd.je/s/</span>
+                    <input type="text" id="cfg-vanity-slug" class="input flex-1" placeholder="my-server" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Config Duplicate</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-duplicate" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">One-click copy settings to another server you own.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Custom Domain</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-domain" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Use your own domain for verification links.</p>
+                <div id="domain-config" class="hidden mt-4 pt-4 border-t border-border-subtle">
+                  <label class="block text-sm font-medium text-text-secondary mb-2">Domain</label>
+                  <input type="text" id="cfg-domain-name" class="input" placeholder="verify.yourserver.com" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Custom Success Page</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-success" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Customize the "you're verified" confirmation page.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="mt-6 flex items-center gap-4">
           <div id="features-saved" class="hidden text-sm text-success">Features saved.</div>
           <button id="save-features-btn" class="btn-primary">Save feature settings</button>
@@ -778,15 +935,57 @@ const base = import.meta.env.BASE_URL;
         }).then(r => r.json());
         currentConfig = c;
         const f = c.enrolled_features || [];
+        const fc = c.feature_config || {};
         (document.getElementById('feat-toggle-challenge') as HTMLInputElement).checked = f.includes('require_challenge');
         (document.getElementById('feat-toggle-modreview') as HTMLInputElement).checked = f.includes('mod_review');
+        (document.getElementById('feat-toggle-booster') as HTMLInputElement).checked = f.includes('booster_bypass');
+        (document.getElementById('feat-toggle-raid') as HTMLInputElement).checked = f.includes('raid_protection');
+        (document.getElementById('feat-toggle-audit') as HTMLInputElement).checked = f.includes('audit_export');
+        (document.getElementById('feat-toggle-timeout') as HTMLInputElement).checked = f.includes('custom_timeout');
+        (document.getElementById('feat-toggle-vanity') as HTMLInputElement).checked = f.includes('vanity_url');
+        (document.getElementById('feat-toggle-duplicate') as HTMLInputElement).checked = f.includes('config_duplicate');
+        (document.getElementById('feat-toggle-domain') as HTMLInputElement).checked = f.includes('custom_verification_domain');
+        (document.getElementById('feat-toggle-success') as HTMLInputElement).checked = f.includes('custom_success_page');
 
         const modreviewConfig = document.getElementById('modreview-config')!;
         if (f.includes('mod_review')) {
           modreviewConfig.classList.remove('hidden');
-          (document.getElementById('cfg-modreview-channel') as HTMLInputElement).value = c.feature_config?.mod_review?.channel_id || '';
+          (document.getElementById('cfg-modreview-channel') as HTMLInputElement).value = fc.mod_review?.channel_id || '';
         } else {
           modreviewConfig.classList.add('hidden');
+        }
+
+        const raidConfig = document.getElementById('raid-config')!;
+        if (f.includes('raid_protection')) {
+          raidConfig.classList.remove('hidden');
+          (document.getElementById('cfg-raid-window') as HTMLInputElement).value = String(fc.raid_protection?.window_seconds || 60);
+          (document.getElementById('cfg-raid-threshold') as HTMLInputElement).value = String(fc.raid_protection?.threshold || 10);
+        } else {
+          raidConfig.classList.add('hidden');
+        }
+
+        const timeoutConfig = document.getElementById('timeout-config')!;
+        if (f.includes('custom_timeout')) {
+          timeoutConfig.classList.remove('hidden');
+          (document.getElementById('cfg-timeout-minutes') as HTMLInputElement).value = String(fc.custom_timeout?.minutes || 10);
+        } else {
+          timeoutConfig.classList.add('hidden');
+        }
+
+        const vanityConfig = document.getElementById('vanity-config')!;
+        if (f.includes('vanity_url')) {
+          vanityConfig.classList.remove('hidden');
+          (document.getElementById('cfg-vanity-slug') as HTMLInputElement).value = fc.vanity_url?.slug || '';
+        } else {
+          vanityConfig.classList.add('hidden');
+        }
+
+        const domainConfig = document.getElementById('domain-config')!;
+        if (f.includes('custom_verification_domain')) {
+          domainConfig.classList.remove('hidden');
+          (document.getElementById('cfg-domain-name') as HTMLInputElement).value = fc.custom_verification_domain?.domain || '';
+        } else {
+          domainConfig.classList.add('hidden');
         }
       } catch {}
     }
@@ -796,16 +995,58 @@ const base = import.meta.env.BASE_URL;
       document.getElementById('modreview-config')!.classList.toggle('hidden', !checked);
     });
 
+    document.getElementById('feat-toggle-raid')?.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      document.getElementById('raid-config')!.classList.toggle('hidden', !checked);
+    });
+
+    document.getElementById('feat-toggle-timeout')?.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      document.getElementById('timeout-config')!.classList.toggle('hidden', !checked);
+    });
+
+    document.getElementById('feat-toggle-vanity')?.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      document.getElementById('vanity-config')!.classList.toggle('hidden', !checked);
+    });
+
+    document.getElementById('feat-toggle-domain')?.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      document.getElementById('domain-config')!.classList.toggle('hidden', !checked);
+    });
+
     document.getElementById('save-features-btn')?.addEventListener('click', async () => {
       if (!session || !guildId) return;
       const f: string[] = [];
       if ((document.getElementById('feat-toggle-challenge') as HTMLInputElement).checked) f.push('require_challenge');
       if ((document.getElementById('feat-toggle-modreview') as HTMLInputElement).checked) f.push('mod_review');
+      if ((document.getElementById('feat-toggle-booster') as HTMLInputElement).checked) f.push('booster_bypass');
+      if ((document.getElementById('feat-toggle-raid') as HTMLInputElement).checked) f.push('raid_protection');
+      if ((document.getElementById('feat-toggle-audit') as HTMLInputElement).checked) f.push('audit_export');
+      if ((document.getElementById('feat-toggle-timeout') as HTMLInputElement).checked) f.push('custom_timeout');
+      if ((document.getElementById('feat-toggle-vanity') as HTMLInputElement).checked) f.push('vanity_url');
+      if ((document.getElementById('feat-toggle-duplicate') as HTMLInputElement).checked) f.push('config_duplicate');
+      if ((document.getElementById('feat-toggle-domain') as HTMLInputElement).checked) f.push('custom_verification_domain');
+      if ((document.getElementById('feat-toggle-success') as HTMLInputElement).checked) f.push('custom_success_page');
 
-      const featureConfig: any = {};
+      const featureConfig: any = currentConfig.feature_config || {};
       if (f.includes('mod_review')) {
-        const channelId = (document.getElementById('cfg-modreview-channel') as HTMLInputElement).value;
-        if (channelId) featureConfig.mod_review = { channel_id: channelId };
+        featureConfig.mod_review = { channel_id: (document.getElementById('cfg-modreview-channel') as HTMLInputElement).value };
+      }
+      if (f.includes('raid_protection')) {
+        featureConfig.raid_protection = {
+          window_seconds: parseInt((document.getElementById('cfg-raid-window') as HTMLInputElement).value) || 60,
+          threshold: parseInt((document.getElementById('cfg-raid-threshold') as HTMLInputElement).value) || 10,
+        };
+      }
+      if (f.includes('custom_timeout')) {
+        featureConfig.custom_timeout = { minutes: parseInt((document.getElementById('cfg-timeout-minutes') as HTMLInputElement).value) || 10 };
+      }
+      if (f.includes('vanity_url')) {
+        featureConfig.vanity_url = { slug: (document.getElementById('cfg-vanity-slug') as HTMLInputElement).value };
+      }
+      if (f.includes('custom_verification_domain')) {
+        featureConfig.custom_verification_domain = { domain: (document.getElementById('cfg-domain-name') as HTMLInputElement).value };
       }
 
       await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
