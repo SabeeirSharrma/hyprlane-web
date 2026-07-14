@@ -73,7 +73,9 @@ import Layout from '../../layouts/Layout.astro';
     const base = import.meta.env.BASE_URL;
     const supabaseUrl = 'https://reieovanxlrqgdqnsyfq.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlaWVvdmFueGxycWdkcW5zeWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzExMzgsImV4cCI6MjA5OTM0NzEzOH0.bOgC3L-z21lssiTgiPDzEMI9LiLhQJRTzczmkDnGGJY';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { flowType: 'implicit' },
+    });
 
     let session: any = null;
     let guildId: string | null = null;
@@ -134,26 +136,24 @@ import Layout from '../../layouts/Layout.astro';
       return null;
     }
 
-    // If there's a hash fragment with tokens, clean URL and reload
-    if (window.location.hash.includes('access_token')) {
-      window.history.replaceState({}, '', `${base}dashboard/`);
-      window.location.reload();
-    }
-
-    // Listen for auth state changes (handles implicit flow hash tokens)
+    // Supabase with implicit flow auto-parses #access_token on init.
+    // onAuthStateChange fires when session is ready.
     supabase.auth.onAuthStateChange((event, s) => {
       if (event === 'SIGNED_IN' && s) {
         session = s;
-        // If we're on the login view, redirect to guilds
-        if (!document.getElementById('view-login')?.classList.contains('hidden')) {
+        // Clean URL if tokens were in hash
+        if (window.location.hash.includes('access_token')) {
           window.history.replaceState({}, '', `${base}dashboard/`);
-          showView('guilds');
-          loadGuilds();
         }
+        showView('guilds');
+        loadGuilds();
+      } else if (event === 'SIGNED_OUT') {
+        session = null;
+        showView('login');
       }
     });
 
-    // Check for existing session
+    // Check for an existing session (covers page reloads)
     checkSession();
 
     async function checkSession() {

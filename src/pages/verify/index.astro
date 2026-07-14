@@ -53,7 +53,9 @@ import Layout from '../../layouts/Layout.astro';
     const API = 'https://hyprlane-api.sabplay-idk.workers.dev';
     const supabaseUrl = 'https://reieovanxlrqgdqnsyfq.supabase.co';
     const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJlaWVvdmFueGxycWdkcW5zeWZxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3NzExMzgsImV4cCI6MjA5OTM0NzEzOH0.bOgC3L-z21lssiTgiPDzEMI9LiLhQJRTzczmkDnGGJY';
-    const supabase = createClient(supabaseUrl, supabaseAnonKey);
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: { flowType: 'implicit' },
+    });
 
     const params = new URLSearchParams(window.location.search);
     const urlToken = params.get('token');
@@ -70,22 +72,66 @@ import Layout from '../../layouts/Layout.astro';
       showState('error');
     }
 
-    // If Supabase returned tokens in the hash fragment, clean URL and reload
-    if (window.location.hash.includes('access_token')) {
-      window.history.replaceState({}, '', window.location.pathname + window.location.search);
-      window.location.reload();
-    }
-
-    // Entry point
+    // Save token before OAuth redirect (survives round-trip)
     if (urlToken) {
       sessionStorage.setItem('pending_verify_token', urlToken);
-      validateToken(urlToken);
-    } else {
-      const saved = sessionStorage.getItem('pending_verify_token');
-      if (saved) {
-        validateToken(saved);
-      } else {
-        showError('No verification token provided.');
+    }
+
+    const savedToken = sessionStorage.getItem('pending_verify_token');
+    if (!savedToken) {
+      showError('No verification token provided.');
+    }
+
+    // Supabase with implicit flow auto-parses #access_token on init.
+    // onAuthStateChange fires when session is ready.
+    supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'SIGNED_IN' && s && savedToken) {
+        // Clean URL if tokens were in hash
+        if (window.location.hash.includes('access_token')) {
+          window.history.replaceState({}, '', window.location.pathname);
+        }
+        validateWithSession(savedToken, s);
+      }
+    });
+
+    // Also try immediately (covers page reloads where session already exists)
+    if (savedToken) {
+      supabase.auth.getSession().then(({ data: { session: s } }) => {
+        if (s) {
+          if (window.location.hash.includes('access_token')) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          validateWithSession(savedToken, s);
+        }
+      });
+    }
+
+    async function validateWithSession(t: string, session: any) {
+      try {
+        const res = await fetch(`${API}/verify/${t}`);
+        const data = await res.json();
+        if (!data.valid) { showState('expired'); return; }
+
+        const discordId = session.user.user_metadata?.provider_id;
+        if (discordId === data.discord_id) {
+          sessionStorage.removeItem('pending_verify_token');
+          showState('challenge');
+          initTurnstile(t, data.discord_id, session.access_token, data.guild_id);
+          return;
+        }
+
+        // Wrong account — log out and re-login
+        await supabase.auth.signOut();
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'discord',
+          options: {
+            redirectTo: window.location.origin + window.location.pathname + '?token=' + t,
+            scopes: 'identify email guilds',
+          },
+        });
+        if (error) showError('Discord login failed. Please try again.');
+      } catch {
+        showError('Could not connect to the verification server.');
       }
     }
 
@@ -95,12 +141,11 @@ import Layout from '../../layouts/Layout.astro';
         const data = await res.json();
         if (!data.valid) { showState('expired'); return; }
 
-        // Check if we already have a Supabase session for this account
+        // Check if we already have a Supabase session
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           const discordId = session.user.user_metadata?.provider_id;
           if (discordId === data.discord_id) {
-            // Session matches — show challenge
             sessionStorage.removeItem('pending_verify_token');
             showState('challenge');
             initTurnstile(t, data.discord_id, session.access_token, data.guild_id);
@@ -108,7 +153,7 @@ import Layout from '../../layouts/Layout.astro';
           }
         }
 
-        // No session or wrong account — redirect to Supabase Discord OAuth
+        // No session — redirect to Discord OAuth
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'discord',
           options: {
@@ -116,10 +161,7 @@ import Layout from '../../layouts/Layout.astro';
             scopes: 'identify email guilds',
           },
         });
-
-        if (error) {
-          showError('Discord login failed. Please try again.');
-        }
+        if (error) showError('Discord login failed. Please try again.');
       } catch {
         showError('Could not connect to the verification server.');
       }
