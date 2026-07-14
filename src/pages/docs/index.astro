@@ -1,0 +1,226 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+
+<Layout title="Docs" description="Learn how to use Hyprlane to verify your Discord server">
+  <div class="max-w-[800px] mx-auto px-6 pt-24 pb-24">
+    <h1 class="font-display text-4xl font-semibold tracking-tight mb-8">Documentation</h1>
+
+    <!-- Quick Start -->
+    <section class="mb-16">
+      <h2 class="font-display text-2xl font-semibold tracking-tight mb-6">Quick Start</h2>
+
+      <div class="space-y-6">
+        <div class="card">
+          <div class="flex items-start gap-4">
+            <span class="text-accent font-mono text-sm mt-1">01</span>
+            <div>
+              <h3 class="font-display font-semibold mb-2">Add the Bot</h3>
+              <p class="text-sm text-text-secondary mb-4">
+                Invite Hyprlane to your server with the required permissions.
+              </p>
+              <a href="https://discord.com/oauth2/authorize?client_id=1524437831823523850&permissions=2416035840&integration_type=0&scope=bot+applications.commands" target="_blank" class="btn-primary text-sm">
+                Add to Discord
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-start gap-4">
+            <span class="text-accent font-mono text-sm mt-1">02</span>
+            <div>
+              <h3 class="font-display font-semibold mb-2">Set Up Verification</h3>
+              <p class="text-sm text-text-secondary mb-4">
+                Run the setup command in your server to configure the verified role.
+              </p>
+              <div class="bg-bg-surface-raised rounded-lg p-4 font-mono text-sm">
+                <p class="text-text-muted mb-2"># In any channel the bot can see:</p>
+                <p class="text-accent">/hyprlane setup</p>
+                <p class="text-text-muted mt-2"># Set the role that verified users get:</p>
+                <p class="text-accent">/hyprlane setup role @Verified</p>
+                <p class="text-text-muted mt-2"># Set the log channel:</p>
+                <p class="text-accent">/hyprlane setup log_channel #logs</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="flex items-start gap-4">
+            <span class="text-accent font-mono text-sm mt-1">03</span>
+            <div>
+              <h3 class="font-display font-semibold mb-2">Done!</h3>
+              <p class="text-sm text-text-secondary">
+                When new members join, the bot will DM them a verification link. Once they verify, they automatically get the verified role.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- For Server Owners -->
+    <section class="mb-16">
+      <h2 class="font-display text-2xl font-semibold tracking-tight mb-6">For Server Owners</h2>
+
+      <div class="space-y-4">
+        <div class="card">
+          <h3 class="font-display font-semibold mb-3">Slash Commands</h3>
+          <div class="space-y-3">
+            <div>
+              <code class="text-accent text-sm">/hyprlane setup</code>
+              <p class="text-sm text-text-secondary mt-1">Initial setup — configures the bot for your server.</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/hyprlane setup role @{'{role}'}</code>
+              <p class="text-sm text-text-secondary mt-1">Set which role verified users receive.</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/hyprlane setup log_channel #{'{channel}'}</code>
+              <p class="text-sm text-text-secondary mt-1">Set where the bot sends join/verify logs.</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/hyprlane status</code>
+              <p class="text-sm text-text-secondary mt-1">Check your server's current configuration.</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/hyprlane check @{'{user}'}</code>
+              <p class="text-sm text-text-secondary mt-1">Check if a specific user is verified.</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/hyprlane revoke @{'{user}'}</code>
+              <p class="text-sm text-text-secondary mt-1">Revoke a user's verification.</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/setstatus @{'{user}'} {'{status}'}</code>
+              <p class="text-sm text-text-secondary mt-1">Manually set a user's status (verified, unverified, pending_mod_review).</p>
+            </div>
+            <div>
+              <code class="text-accent text-sm">/hlid</code>
+              <p class="text-sm text-text-secondary mt-1">Show your Hyprlane ID card with verification info.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3 class="font-display font-semibold mb-3">Features</h3>
+          <p class="text-sm text-text-secondary mb-4">
+            Toggle features on/off with the feature command:
+          </p>
+          <div class="bg-bg-surface-raised rounded-lg p-4 font-mono text-sm">
+            <p class="text-accent">/hyprlane feature enable {'{feature_name}'}</p>
+            <p class="text-accent">/hyprlane feature disable {'{feature_name}'}</p>
+          </div>
+          <div class="mt-4 space-y-2">
+            <div>
+              <code class="text-accent text-sm">require_challenge</code>
+              <span class="text-text-muted text-sm ml-2">— Re-verify on every join</span>
+            </div>
+            <div>
+              <code class="text-accent text-sm">mod_review</code>
+              <span class="text-text-muted text-sm ml-2">— Require mod approval</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- For Users -->
+    <section class="mb-16">
+      <h2 class="font-display text-2xl font-semibold tracking-tight mb-6">For Users</h2>
+
+      <div class="space-y-4">
+        <div class="card">
+          <h3 class="font-display font-semibold mb-3">How Verification Works</h3>
+          <ol class="space-y-3 text-sm text-text-secondary">
+            <li class="flex items-start gap-3">
+              <span class="text-accent font-mono">1.</span>
+              <span>Join a server with Hyprlane.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-accent font-mono">2.</span>
+              <span>The bot DMs you a verification link.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-accent font-mono">3.</span>
+              <span>Click the link and log in with Discord.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-accent font-mono">4.</span>
+              <span>Complete the Turnstile challenge.</span>
+            </li>
+            <li class="flex items-start gap-3">
+              <span class="text-accent font-mono">5.</span>
+              <span>You're verified! The bot assigns your role automatically.</span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h3 class="font-display font-semibold mb-3">Verify Once, Pass Everywhere</h3>
+          <p class="text-sm text-text-secondary">
+            Once you verify with Hyprlane, you're recognized across every server that uses it.
+            No repeated verification, no waiting periods.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="font-display font-semibold mb-3">DMs Closed?</h3>
+          <p class="text-sm text-text-secondary">
+            If the bot can't DM you, it will post the verification link in the server's log channel.
+            You can also ask a moderator to generate a new link for you.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Troubleshooting -->
+    <section class="mb-16">
+      <h2 class="font-display text-2xl font-semibold tracking-tight mb-6">Troubleshooting</h2>
+
+      <div class="space-y-4">
+        <div class="card">
+          <h3 class="font-display font-semibold mb-2">Bot didn't DM me</h3>
+          <p class="text-sm text-text-secondary">
+            Your DMs might be closed. Enable DMs from server members, or ask a moderator to check the log channel for your verification link.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="font-display font-semibold mb-2">Verification link expired</h3>
+          <p class="text-sm text-text-secondary">
+            Links expire after 10 minutes. Ask a moderator to run <code class="text-accent">/hyprlane check @{'{user}'}</code> or rejoin the server to get a new link.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="font-display font-semibold mb-2">Role not assigned</h3>
+          <p class="text-sm text-text-secondary">
+            Make sure the bot's role is higher than the verified role in the server hierarchy. The bot needs Manage Roles permission.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3 class="font-display font-semibold mb-2">I'm verified but still can't see channels</h3>
+          <p class="text-sm text-text-secondary">
+            Check that your verified role has the correct channel permissions. The bot assigns the role, but channel permissions are managed by your server's role settings.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Links -->
+    <section>
+      <div class="card">
+        <h3 class="font-display font-semibold mb-4">Need Help?</h3>
+        <div class="flex flex-wrap gap-4">
+          <a href="https://github.com/SabeeirSharrma/hyprlane/issues" target="_blank" class="btn-ghost text-sm">Report an Issue</a>
+          <a href="https://github.com/SabeeirSharrma/hyprlane" target="_blank" class="btn-ghost text-sm">View Source Code</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
