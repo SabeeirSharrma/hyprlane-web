@@ -10,6 +10,9 @@ const base = import.meta.env.BASE_URL;
         <a href={`${import.meta.env.BASE_URL}`} class="font-display text-lg font-semibold text-text-primary hover:text-accent transition-colors">Hyprlane</a>
       </div>
       <nav id="sidebar-nav" class="flex-1 p-3 flex flex-col gap-1"></nav>
+      <div class="p-3 border-t border-border-subtle">
+        <div id="guild-info" class="flex items-center gap-3 px-3 py-2"></div>
+      </div>
     </aside>
 
     <main id="main" class="flex-1 p-8">
@@ -36,30 +39,91 @@ const base = import.meta.env.BASE_URL;
       </div>
 
       <div id="view-overview" class="hidden">
-        <h1 class="font-display text-2xl font-semibold tracking-tight mb-6">Overview</h1>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
-          <div class="card"><p class="text-sm text-text-secondary mb-1">Verified users</p><p id="stat-verified" class="text-3xl font-display font-semibold text-accent">0</p></div>
-          <div class="card"><p class="text-sm text-text-secondary mb-1">Flagged accounts</p><p id="stat-flagged" class="text-3xl font-display font-semibold text-danger">0</p></div>
-          <div class="card"><p class="text-sm text-text-secondary mb-1">Features</p><p id="stat-features" class="text-lg font-medium text-text-primary">—</p></div>
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Overview</h1>
+            <p id="overview-subtitle" class="text-text-secondary text-sm mt-1"></p>
+          </div>
         </div>
-        <div id="flagged-list" class="hidden">
-          <h2 class="font-display text-lg font-semibold mb-4">Flagged Accounts</h2>
-          <div id="flagged-items" class="flex flex-col"></div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+          <div class="card">
+            <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Verified</p>
+            <p id="stat-verified" class="text-3xl font-display font-semibold text-accent">0</p>
+          </div>
+          <div class="card">
+            <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Pending</p>
+            <p id="stat-pending" class="text-3xl font-display font-semibold text-warning">0</p>
+          </div>
+          <div class="card">
+            <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Flagged</p>
+            <p id="stat-flagged" class="text-3xl font-display font-semibold text-danger">0</p>
+          </div>
+          <div class="card">
+            <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Features</p>
+            <p id="stat-features" class="text-lg font-medium text-text-primary mt-1">—</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card">
+            <h3 class="font-display font-semibold mb-4">Quick Actions</h3>
+            <div class="flex flex-col gap-2">
+              <a href="#members" class="nav-link flex items-center gap-3 px-3 py-2 rounded text-sm text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                Manage Members
+              </a>
+              <a href="#settings" class="nav-link flex items-center gap-3 px-3 py-2 rounded text-sm text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                Server Settings
+              </a>
+              <a href="#features" class="nav-link flex items-center gap-3 px-3 py-2 rounded text-sm text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised transition-colors">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Features & Security
+              </a>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="font-display font-semibold mb-4">Server Configuration</h3>
+            <div id="config-summary" class="flex flex-col gap-3 text-sm">
+              <div class="flex justify-between"><span class="text-text-secondary">Verified Role</span><span id="cfg-role-display" class="font-mono text-text-primary">—</span></div>
+              <div class="flex justify-between"><span class="text-text-secondary">Log Channel</span><span id="cfg-log-display" class="font-mono text-text-primary">—</span></div>
+              <div class="flex justify-between"><span class="text-text-secondary">Mod Role</span><span id="cfg-mod-display" class="font-mono text-text-primary">—</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="flagged-section" class="hidden mt-6">
+          <div class="card">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-display font-semibold">Flagged Accounts</h3>
+              <span class="pill pill-danger" id="flagged-count-badge">0</span>
+            </div>
+            <div id="flagged-items" class="flex flex-col"></div>
+          </div>
         </div>
       </div>
 
       <div id="view-members" class="hidden">
         <div class="flex items-center justify-between mb-6">
-          <h1 class="font-display text-2xl font-semibold tracking-tight">Verified Members</h1>
+          <div>
+            <h1 class="font-display text-2xl font-semibold tracking-tight">Members</h1>
+            <p class="text-text-secondary text-sm mt-1">Manage verified users in this server.</p>
+          </div>
           <div class="flex gap-2">
-            <button id="tab-verified" class="tab tab-active" data-tab="verified">Verified</button>
-            <button id="tab-pending" class="tab" data-tab="pending">Pending Review</button>
+            <button class="tab tab-active" data-tab="verified">Verified</button>
+            <button class="tab" data-tab="pending">Pending Review</button>
           </div>
         </div>
-        <input type="text" id="member-search" placeholder="Search by Discord ID..." class="input max-w-sm mb-6" />
+
+        <div class="flex items-center gap-4 mb-6">
+          <input type="text" id="member-search" placeholder="Search by Discord ID..." class="input max-w-sm" />
+          <span id="member-count" class="text-sm text-text-secondary"></span>
+        </div>
 
         <div id="tab-content-verified" class="hidden">
-          <div id="members-empty" class="hidden text-text-secondary py-12 text-center">No one's verified here yet.</div>
+          <div id="members-empty" class="hidden text-text-secondary py-12 text-center">No verified members yet.</div>
           <div id="members-list" class="hidden flex flex-col"></div>
         </div>
 
@@ -69,26 +133,130 @@ const base = import.meta.env.BASE_URL;
         </div>
       </div>
 
-      <div id="view-settings" class="hidden">
-        <h1 class="font-display text-2xl font-semibold tracking-tight mb-6">Settings</h1>
-        <form id="settings-form" class="max-w-xl flex flex-col gap-6">
-          <div><label class="block text-sm font-medium text-text-secondary mb-2">Verified Role ID</label><input type="text" id="cfg-role" class="input" placeholder="e.g. 1234567890123456789" /></div>
-          <div><label class="block text-sm font-medium text-text-secondary mb-2">Log Channel ID</label><input type="text" id="cfg-log" class="input" placeholder="Optional" /></div>
-          <div><label class="block text-sm font-medium text-text-secondary mb-2">Mod Role ID</label><input type="text" id="cfg-mod" class="input" placeholder="Optional" /></div>
-          <div>
-            <label class="block text-sm font-medium text-text-secondary mb-3">Features</label>
-            <div class="flex flex-col gap-3">
-              <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="feat-challenge" class="w-4 h-4 accent-accent rounded" /><span class="text-sm">Require challenge for all joins</span></label>
-              <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="feat-phone" class="w-4 h-4 accent-accent rounded" /><span class="text-sm">Phone number required</span></label>
-              <label class="flex items-center gap-3 cursor-pointer"><input type="checkbox" id="feat-modreview" class="w-4 h-4 accent-accent rounded" /><span class="text-sm">Moderator review required</span></label>
+      <div id="view-features" class="hidden">
+        <div class="mb-8">
+          <h1 class="font-display text-2xl font-semibold tracking-tight">Features & Security</h1>
+          <p class="text-text-secondary text-sm mt-1">Configure verification requirements and security features.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Require Challenge</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-challenge" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Re-run verification for every join, even for already-verified users. Use for high-risk servers.</p>
+              </div>
             </div>
           </div>
-          <div id="modreview-config" class="hidden">
-            <label class="block text-sm font-medium text-text-secondary mb-2">Mod Review Channel ID</label>
-            <input type="text" id="cfg-modreview-channel" class="input" placeholder="Channel for mod reviews" />
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Phone Required</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-phone" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Require a linked phone number. Users without one will be prompted to link it.</p>
+              </div>
+            </div>
           </div>
-          <div id="save-ok" class="hidden text-sm text-success">Saved.</div>
-          <button type="submit" class="btn-primary self-start">Save settings</button>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center justify-between mb-2">
+                  <h3 class="font-display font-semibold">Moderator Review</h3>
+                  <label class="toggle"><input type="checkbox" id="feat-toggle-modreview" /><span class="toggle-slider"></span></label>
+                </div>
+                <p class="text-sm text-text-secondary">Require manual approval from a moderator before granting the verified role.</p>
+                <div id="modreview-config" class="hidden mt-4 pt-4 border-t border-border-subtle">
+                  <label class="block text-sm font-medium text-text-secondary mb-2">Review Channel ID</label>
+                  <input type="text" id="cfg-modreview-channel" class="input" placeholder="Channel where users run /hlid" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="flex items-start gap-4">
+              <div class="w-10 h-10 rounded-lg bg-success/15 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+              </div>
+              <div class="flex-1">
+                <h3 class="font-display font-semibold mb-2">Always Active</h3>
+                <div class="flex flex-col gap-2 text-sm">
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    <span class="text-text-secondary">Disposable email detection</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    <span class="text-text-secondary">Phone number deduplication</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                    <span class="text-text-secondary">Cross-server identity</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center gap-4">
+          <div id="features-saved" class="hidden text-sm text-success">Features saved.</div>
+          <button id="save-features-btn" class="btn-primary">Save feature settings</button>
+        </div>
+      </div>
+
+      <div id="view-settings" class="hidden">
+        <div class="mb-8">
+          <h1 class="font-display text-2xl font-semibold tracking-tight">Settings</h1>
+          <p class="text-text-secondary text-sm mt-1">Configure roles, channels, and general settings.</p>
+        </div>
+
+        <form id="settings-form" class="max-w-2xl flex flex-col gap-8">
+          <div class="card">
+            <h3 class="font-display font-semibold mb-4">Roles</h3>
+            <div class="flex flex-col gap-4">
+              <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Verified Role</label>
+                <p class="text-xs text-text-muted mb-2">Role assigned to verified users</p>
+                <input type="text" id="cfg-role" class="input" placeholder="Role ID" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-text-secondary mb-2">Mod Role</label>
+                <p class="text-xs text-text-muted mb-2">Role allowed to use moderation commands</p>
+                <input type="text" id="cfg-mod" class="input" placeholder="Optional" />
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3 class="font-display font-semibold mb-4">Channels</h3>
+            <div>
+              <label class="block text-sm font-medium text-text-secondary mb-2">Log Channel</label>
+              <p class="text-xs text-text-muted mb-2">Channel for audit logs and fallback notifications</p>
+              <input type="text" id="cfg-log" class="input" placeholder="Optional" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-4">
+            <div id="save-ok" class="hidden text-sm text-success">Settings saved.</div>
+            <button type="submit" class="btn-primary">Save settings</button>
+          </div>
         </form>
       </div>
     </main>
@@ -107,9 +275,10 @@ const base = import.meta.env.BASE_URL;
 
     let session: any = null;
     let guildId: string | null = null;
+    let guildName: string = '';
     let allMembers: any[] = [];
     let allPending: any[] = [];
-    let currentTab = 'verified';
+    let currentConfig: any = null;
 
     function authHeaders() {
       return {
@@ -126,14 +295,15 @@ const base = import.meta.env.BASE_URL;
     function buildNav(gid: string) {
       const nav = document.getElementById('sidebar-nav')!;
       const items = [
-        { id: 'overview', label: 'Overview', sub: '' },
-        { id: 'members', label: 'Members', sub: 'members' },
-        { id: 'settings', label: 'Settings', sub: 'settings' },
+        { id: 'overview', label: 'Overview', icon: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>' },
+        { id: 'members', label: 'Members', icon: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' },
+        { id: 'features', label: 'Features', icon: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>' },
+        { id: 'settings', label: 'Settings', icon: '<svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>' },
       ];
       const currentHash = window.location.hash.replace('#', '');
       nav.innerHTML = items.map(v => {
         const active = v.sub === currentHash || (!v.sub && !currentHash);
-        return `<a href="#${v.sub}" data-view="${v.id}" class="nav-link px-3 py-2 rounded text-sm transition-colors ${active ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised'}">${v.label}</a>`;
+        return `<a href="#${v.sub}" data-view="${v.id}" class="nav-link flex items-center gap-3 px-3 py-2 rounded text-sm transition-colors ${active ? 'bg-accent/10 text-accent' : 'text-text-secondary hover:text-text-primary hover:bg-bg-surface-raised'}">${v.icon}${v.label}</a>`;
       }).join('');
       nav.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', (e) => {
@@ -156,6 +326,7 @@ const base = import.meta.env.BASE_URL;
       });
       if (view === 'overview') loadOverview();
       if (view === 'members') loadMembers();
+      if (view === 'features') loadFeatures();
       if (view === 'settings') loadSettings();
     }
 
@@ -169,6 +340,7 @@ const base = import.meta.env.BASE_URL;
         buildNav(guildId);
         const sub = parts[2] || '';
         if (sub === 'members') return 'members';
+        if (sub === 'features') return 'features';
         if (sub === 'settings') return 'settings';
         return 'overview';
       }
@@ -253,26 +425,38 @@ const base = import.meta.env.BASE_URL;
           fetch(`${API}/dashboard/guilds/${guildId}/stats`, { headers: authHeaders() }).then(r => r.json()),
           fetch(`${API}/dashboard/guilds/${guildId}/config`, { headers: authHeaders() }).then(r => r.json()),
         ]);
+
+        currentConfig = config;
+
         document.getElementById('stat-verified')!.textContent = String(stats.verified_count ?? 0);
+        document.getElementById('stat-pending')!.textContent = String(stats.pending_count ?? 0);
         document.getElementById('stat-flagged')!.textContent = String(stats.flagged_count ?? 0);
+
         const f = config.enrolled_features || [];
         document.getElementById('stat-features')!.textContent = f.length ? f.join(', ') : 'Default';
 
-        // Load flagged accounts
+        // Config summary
+        document.getElementById('cfg-role-display')!.textContent = config.verified_role_id || 'Not set';
+        document.getElementById('cfg-log-display')!.textContent = config.log_channel_id || 'None';
+        document.getElementById('cfg-mod-display')!.textContent = config.mod_role_id || 'None';
+
+        // Flagged accounts
         if (stats.flagged_count > 0) {
           const flaggedRes = await fetch(`${API}/dashboard/guilds/${guildId}/flagged-members`, { headers: authHeaders() });
           if (flaggedRes.ok) {
             const flagged = await flaggedRes.json();
-            const list = document.getElementById('flagged-list')!;
+            const section = document.getElementById('flagged-section')!;
             const items = document.getElementById('flagged-items')!;
+            const badge = document.getElementById('flagged-count-badge')!;
             if (flagged.length > 0) {
-              list.classList.remove('hidden');
+              section.classList.remove('hidden');
+              badge.textContent = String(flagged.length);
               items.innerHTML = flagged.map((m: any) => `
-                <div class="table-row flex items-center justify-between py-3 px-4">
+                <div class="flex items-center justify-between py-3 border-b border-border-subtle last:border-0">
                   <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-danger/15 flex items-center justify-center text-danger text-xs font-mono">${m.discord_id.slice(-4)}</div>
                     <div>
-                      <p class="text-sm font-medium">${m.discord_id}</p>
+                      <p class="text-sm font-medium font-mono">${m.discord_id}</p>
                       <p class="text-xs text-text-muted">${m.flagged_reason || 'unknown'}</p>
                     </div>
                   </div>
@@ -296,7 +480,16 @@ const base = import.meta.env.BASE_URL;
         allPending = members.filter((m: any) => m.guild_overrides?.[guildId]?.local_status === 'pending_mod_review');
         renderMembers(allMembers);
         renderPending(allPending);
+        updateMemberCount();
       } catch {}
+    }
+
+    function updateMemberCount() {
+      const q = (document.getElementById('member-search') as HTMLInputElement)?.value?.toLowerCase() || '';
+      const filtered = currentTab === 'verified'
+        ? allMembers.filter(m => m.discord_id.includes(q))
+        : allPending.filter(m => m.discord_id.includes(q));
+      document.getElementById('member-count')!.textContent = `${filtered.length} ${currentTab === 'verified' ? 'verified' : 'pending'}`;
     }
 
     function renderMembers(members: any[]) {
@@ -306,12 +499,14 @@ const base = import.meta.env.BASE_URL;
       empty.classList.add('hidden'); list.classList.remove('hidden');
       list.innerHTML = members.map(m => `
         <div class="table-row flex items-center justify-between py-3 px-4">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-bg-surface-raised flex items-center justify-center text-text-muted text-xs font-mono">${m.discord_id.slice(-4)}</div>
-            <div><p class="text-sm font-medium">${m.discord_id}</p><p class="text-xs text-text-muted font-mono">${m.verified_at ? new Date(m.verified_at).toLocaleDateString() : '—'}</p></div>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-bg-surface-raised flex items-center justify-center text-text-muted text-xs font-mono flex-shrink-0">${m.discord_id.slice(-4)}</div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium font-mono truncate">${m.discord_id}</p>
+              <p class="text-xs text-text-muted">${m.verified_at ? `Verified ${new Date(m.verified_at).toLocaleDateString()}` : '—'} · ${m.method || 'oauth'}</p>
+            </div>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="pill pill-success">verified</span>
+          <div class="flex items-center gap-3 flex-shrink-0">
             ${m.phone_linked ? '<span class="pill pill-success">phone</span>' : ''}
             <button class="btn-danger-sm revoke-btn" data-id="${m.discord_id}">Revoke</button>
           </div>
@@ -327,6 +522,7 @@ const base = import.meta.env.BASE_URL;
             headers: authHeaders(),
           });
           loadMembers();
+          loadOverview();
         });
       });
     }
@@ -338,11 +534,14 @@ const base = import.meta.env.BASE_URL;
       empty.classList.add('hidden'); list.classList.remove('hidden');
       list.innerHTML = members.map(m => `
         <div class="table-row flex items-center justify-between py-3 px-4">
-          <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-full bg-warning/15 flex items-center justify-center text-warning text-xs font-mono">${m.discord_id.slice(-4)}</div>
-            <div><p class="text-sm font-medium">${m.discord_id}</p><p class="text-xs text-text-muted font-mono">Pending mod review</p></div>
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-8 h-8 rounded-full bg-warning/15 flex items-center justify-center text-warning text-xs font-mono flex-shrink-0">${m.discord_id.slice(-4)}</div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium font-mono truncate">${m.discord_id}</p>
+              <p class="text-xs text-text-muted">Awaiting moderator review</p>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-shrink-0">
             <button class="btn-success-sm approve-btn" data-id="${m.discord_id}">Approve</button>
             <button class="btn-danger-sm reject-btn" data-id="${m.discord_id}">Reject</button>
           </div>
@@ -358,6 +557,7 @@ const base = import.meta.env.BASE_URL;
             body: JSON.stringify({ status: 'verified' }),
           });
           loadMembers();
+          loadOverview();
         });
       });
 
@@ -371,18 +571,20 @@ const base = import.meta.env.BASE_URL;
             body: JSON.stringify({ status: 'unverified' }),
           });
           loadMembers();
+          loadOverview();
         });
       });
     }
 
     // Tab switching
+    let currentTab = 'verified';
     document.querySelectorAll('.tab').forEach(tab => {
       tab.addEventListener('click', (e) => {
-        const target = (e.currentTarget as HTMLElement).dataset.tab!;
-        currentTab = target;
+        currentTab = (e.currentTarget as HTMLElement).dataset.tab!;
         document.querySelectorAll('.tab').forEach(t => t.classList.toggle('tab-active', t === e.currentTarget));
-        document.getElementById('tab-content-verified')!.classList.toggle('hidden', target !== 'verified');
-        document.getElementById('tab-content-pending')!.classList.toggle('hidden', target !== 'pending');
+        document.getElementById('tab-content-verified')!.classList.toggle('hidden', currentTab !== 'verified');
+        document.getElementById('tab-content-pending')!.classList.toggle('hidden', currentTab !== 'pending');
+        updateMemberCount();
       });
     });
 
@@ -390,23 +592,21 @@ const base = import.meta.env.BASE_URL;
       const q = (e.target as HTMLInputElement).value.toLowerCase();
       renderMembers(allMembers.filter(m => m.discord_id.includes(q)));
       renderPending(allPending.filter(m => m.discord_id.includes(q)));
+      updateMemberCount();
     });
 
-    async function loadSettings() {
+    async function loadFeatures() {
       if (!session || !guildId) return;
       try {
         const c = await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
           headers: authHeaders(),
         }).then(r => r.json());
-        (document.getElementById('cfg-role') as HTMLInputElement).value = c.verified_role_id || '';
-        (document.getElementById('cfg-log') as HTMLInputElement).value = c.log_channel_id || '';
-        (document.getElementById('cfg-mod') as HTMLInputElement).value = c.mod_role_id || '';
+        currentConfig = c;
         const f = c.enrolled_features || [];
-        (document.getElementById('feat-challenge') as HTMLInputElement).checked = f.includes('require_challenge');
-        (document.getElementById('feat-phone') as HTMLInputElement).checked = f.includes('phone_required');
-        (document.getElementById('feat-modreview') as HTMLInputElement).checked = f.includes('mod_review');
+        (document.getElementById('feat-toggle-challenge') as HTMLInputElement).checked = f.includes('require_challenge');
+        (document.getElementById('feat-toggle-phone') as HTMLInputElement).checked = f.includes('phone_required');
+        (document.getElementById('feat-toggle-modreview') as HTMLInputElement).checked = f.includes('mod_review');
 
-        // Show/hide mod review config
         const modreviewConfig = document.getElementById('modreview-config')!;
         if (f.includes('mod_review')) {
           modreviewConfig.classList.remove('hidden');
@@ -417,18 +617,17 @@ const base = import.meta.env.BASE_URL;
       } catch {}
     }
 
-    // Toggle mod review config visibility
-    document.getElementById('feat-modreview')?.addEventListener('change', (e) => {
+    document.getElementById('feat-toggle-modreview')?.addEventListener('change', (e) => {
       const checked = (e.target as HTMLInputElement).checked;
       document.getElementById('modreview-config')!.classList.toggle('hidden', !checked);
     });
 
-    document.getElementById('settings-form')?.addEventListener('submit', async (e) => {
-      e.preventDefault();
+    document.getElementById('save-features-btn')?.addEventListener('click', async () => {
+      if (!session || !guildId) return;
       const f: string[] = [];
-      if ((document.getElementById('feat-challenge') as HTMLInputElement).checked) f.push('require_challenge');
-      if ((document.getElementById('feat-phone') as HTMLInputElement).checked) f.push('phone_required');
-      if ((document.getElementById('feat-modreview') as HTMLInputElement).checked) f.push('mod_review');
+      if ((document.getElementById('feat-toggle-challenge') as HTMLInputElement).checked) f.push('require_challenge');
+      if ((document.getElementById('feat-toggle-phone') as HTMLInputElement).checked) f.push('phone_required');
+      if ((document.getElementById('feat-toggle-modreview') as HTMLInputElement).checked) f.push('mod_review');
 
       const featureConfig: any = {};
       if (f.includes('mod_review')) {
@@ -440,13 +639,45 @@ const base = import.meta.env.BASE_URL;
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', ...authHeaders() },
         body: JSON.stringify({
-          verified_role_id: (document.getElementById('cfg-role') as HTMLInputElement).value,
-          log_channel_id: (document.getElementById('cfg-log') as HTMLInputElement).value || null,
-          mod_role_id: (document.getElementById('cfg-mod') as HTMLInputElement).value || null,
+          ...currentConfig,
           enrolled_features: f,
           feature_config: featureConfig,
         }),
       });
+
+      const ok = document.getElementById('features-saved')!;
+      ok.classList.remove('hidden');
+      setTimeout(() => ok.classList.add('hidden'), 2000);
+    });
+
+    async function loadSettings() {
+      if (!session || !guildId) return;
+      try {
+        const c = await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
+          headers: authHeaders(),
+        }).then(r => r.json());
+        currentConfig = c;
+        (document.getElementById('cfg-role') as HTMLInputElement).value = c.verified_role_id || '';
+        (document.getElementById('cfg-log') as HTMLInputElement).value = c.log_channel_id || '';
+        (document.getElementById('cfg-mod') as HTMLInputElement).value = c.mod_role_id || '';
+      } catch {}
+    }
+
+    document.getElementById('settings-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!session || !guildId) return;
+
+      await fetch(`${API}/dashboard/guilds/${guildId}/config`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({
+          ...currentConfig,
+          verified_role_id: (document.getElementById('cfg-role') as HTMLInputElement).value,
+          log_channel_id: (document.getElementById('cfg-log') as HTMLInputElement).value || null,
+          mod_role_id: (document.getElementById('cfg-mod') as HTMLInputElement).value || null,
+        }),
+      });
+
       const ok = document.getElementById('save-ok')!;
       ok.classList.remove('hidden');
       setTimeout(() => ok.classList.add('hidden'), 2000);
