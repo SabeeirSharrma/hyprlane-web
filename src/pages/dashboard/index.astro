@@ -9,10 +9,16 @@ const base = import.meta.env.BASE_URL;
       <div class="p-4 border-b border-border-subtle">
         <a href={`${import.meta.env.BASE_URL}`} class="font-display text-lg font-semibold text-text-primary hover:text-accent transition-colors">Hyprlane</a>
       </div>
-      <nav id="sidebar-nav" class="flex-1 p-3 flex flex-col gap-1"></nav>
-      <div class="p-3 border-t border-border-subtle">
-        <div id="guild-info" class="flex items-center gap-3 px-3 py-2"></div>
+      <div id="guild-header" class="hidden px-4 py-3 border-b border-border-subtle">
+        <div class="flex items-center gap-3">
+          <div id="guild-icon" class="w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center text-accent font-display text-sm font-semibold flex-shrink-0"></div>
+          <div class="min-w-0">
+            <p id="guild-name" class="text-sm font-medium truncate text-text-primary"></p>
+            <p id="guild-id-display" class="text-xs text-text-muted font-mono truncate"></p>
+          </div>
+        </div>
       </div>
+      <nav id="sidebar-nav" class="flex-1 p-3 flex flex-col gap-1"></nav>
     </aside>
 
     <main id="main" class="flex-1 p-8">
@@ -366,6 +372,7 @@ const base = import.meta.env.BASE_URL;
           document.getElementById('sidebar')!.classList.remove('hidden');
           document.getElementById('main')!.classList.add('ml-56');
           buildNav(guildId);
+          loadGuildInfo(guildId);
           window.history.replaceState({}, '', `${base}dashboard/${guildId}/`);
           return 'overview';
         } else {
@@ -386,6 +393,7 @@ const base = import.meta.env.BASE_URL;
           document.getElementById('sidebar')!.classList.remove('hidden');
           document.getElementById('main')!.classList.add('ml-56');
           buildNav(guildId);
+          loadGuildInfo(guildId);
           const sub = parts[2] || '';
           if (sub === 'members') return 'members';
           if (sub === 'features') return 'features';
@@ -398,6 +406,34 @@ const base = import.meta.env.BASE_URL;
         }
       }
       return null;
+    }
+
+    async function loadGuildInfo(gid: string) {
+      try {
+        const res = await fetch(`${API}/dashboard/guilds`, { headers: authHeaders() });
+        if (!res.ok) return;
+        const guilds = await res.json();
+        const guild = guilds.find((g: any) => g.id === gid);
+        if (!guild) return;
+
+        const header = document.getElementById('guild-header')!;
+        const icon = document.getElementById('guild-icon')!;
+        const name = document.getElementById('guild-name')!;
+        const idDisplay = document.getElementById('guild-id-display')!;
+
+        header.classList.remove('hidden');
+
+        if (guild.icon) {
+          icon.innerHTML = `<img src="https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png" class="w-8 h-8 rounded-full" alt="" />`;
+          icon.className = 'w-8 h-8 rounded-full flex-shrink-0';
+        } else {
+          icon.textContent = guild.name.charAt(0);
+          icon.className = 'w-8 h-8 rounded-full bg-accent/15 flex items-center justify-center text-accent font-display text-sm font-semibold flex-shrink-0';
+        }
+
+        name.textContent = guild.name;
+        idDisplay.textContent = guild.id;
+      } catch {}
     }
 
     async function validateGuildAccess(guildIdToCheck: string): Promise<boolean> {
@@ -497,6 +533,11 @@ const base = import.meta.env.BASE_URL;
 
     async function loadOverview() {
       if (!session || !guildId) return;
+      // Set subtitle from guild header
+      const guildName = document.getElementById('guild-name')?.textContent;
+      if (guildName) {
+        document.getElementById('overview-subtitle')!.textContent = guildName;
+      }
       try {
         const [stats, config] = await Promise.all([
           fetch(`${API}/dashboard/guilds/${guildId}/stats`, { headers: authHeaders() }).then(r => r.json()),
