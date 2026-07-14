@@ -184,21 +184,6 @@ const base = import.meta.env.BASE_URL;
           <div class="card">
             <div class="flex items-start gap-4">
               <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-              </div>
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <h3 class="font-display font-semibold">Phone Required</h3>
-                  <label class="toggle"><input type="checkbox" id="feat-toggle-phone" /><span class="toggle-slider"></span></label>
-                </div>
-                <p class="text-sm text-text-secondary">Require a linked phone number. Users without one will be prompted to link it.</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="flex items-start gap-4">
-              <div class="w-10 h-10 rounded-lg bg-accent/15 flex items-center justify-center flex-shrink-0">
                 <svg class="w-5 h-5 text-accent" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></svg>
               </div>
               <div class="flex-1">
@@ -226,10 +211,6 @@ const base = import.meta.env.BASE_URL;
                   <div class="flex items-center gap-2">
                     <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                     <span class="text-text-secondary">Disposable email detection</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
-                    <span class="text-text-secondary">Phone number deduplication</span>
                   </div>
                   <div class="flex items-center gap-2">
                     <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
@@ -702,7 +683,6 @@ const base = import.meta.env.BASE_URL;
             </div>
           </div>
           <div class="flex items-center gap-3 flex-shrink-0">
-            ${m.phone_linked ? '<span class="pill pill-success">phone</span>' : ''}
             <button class="btn-danger-sm revoke-btn" data-id="${m.discord_id}">Revoke</button>
           </div>
         </div>
@@ -799,7 +779,6 @@ const base = import.meta.env.BASE_URL;
         currentConfig = c;
         const f = c.enrolled_features || [];
         (document.getElementById('feat-toggle-challenge') as HTMLInputElement).checked = f.includes('require_challenge');
-        (document.getElementById('feat-toggle-phone') as HTMLInputElement).checked = f.includes('phone_required');
         (document.getElementById('feat-toggle-modreview') as HTMLInputElement).checked = f.includes('mod_review');
 
         const modreviewConfig = document.getElementById('modreview-config')!;
@@ -821,7 +800,6 @@ const base = import.meta.env.BASE_URL;
       if (!session || !guildId) return;
       const f: string[] = [];
       if ((document.getElementById('feat-toggle-challenge') as HTMLInputElement).checked) f.push('require_challenge');
-      if ((document.getElementById('feat-toggle-phone') as HTMLInputElement).checked) f.push('phone_required');
       if ((document.getElementById('feat-toggle-modreview') as HTMLInputElement).checked) f.push('mod_review');
 
       const featureConfig: any = {};
