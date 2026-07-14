@@ -252,6 +252,50 @@
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-accent) 40%, transparent);
   }
 
+  .skeleton {
+    background: linear-gradient(90deg, var(--color-bg-surface) 25%, var(--color-bg-surface-raised) 50%, var(--color-bg-surface) 75%);
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.5s ease-in-out infinite;
+    border-radius: 4px;
+  }
+
+  .skeleton-text {
+    height: 1rem;
+    width: 100%;
+  }
+
+  .skeleton-text-sm {
+    height: 0.75rem;
+    width: 60%;
+  }
+
+  .skeleton-text-lg {
+    height: 2rem;
+    width: 40%;
+  }
+
+  .skeleton-circle {
+    border-radius: 50%;
+  }
+
+  .skeleton-card {
+    background-color: var(--color-bg-surface);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 8px;
+    padding: 1.5rem;
+  }
+
+  @keyframes skeleton-shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: none;
+    }
+  }
+
   /* Lane animation keyframes */
   @keyframes lane-travel {
     0% { left: 0%; }

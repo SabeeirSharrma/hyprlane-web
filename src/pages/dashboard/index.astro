@@ -35,7 +35,12 @@ const base = import.meta.env.BASE_URL;
           </div>
           <a href={`${base}dashboard/account/`} class="btn-ghost text-sm">Account</a>
         </div>
-        <div id="guild-list" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="guild-list-skeleton" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div class="skeleton-card"><div class="skeleton skeleton-text mb-3"></div><div class="skeleton skeleton-text-sm"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text mb-3"></div><div class="skeleton skeleton-text-sm"></div></div>
+          <div class="skeleton-card"><div class="skeleton skeleton-text mb-3"></div><div class="skeleton skeleton-text-sm"></div></div>
+        </div>
+        <div id="guild-list" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
       </div>
 
       <div id="view-overview" class="hidden">
@@ -49,19 +54,23 @@ const base = import.meta.env.BASE_URL;
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
           <div class="card">
             <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Verified</p>
-            <p id="stat-verified" class="text-3xl font-display font-semibold text-accent">0</p>
+            <p id="stat-verified" class="text-3xl font-display font-semibold text-accent hidden">0</p>
+            <div id="stat-verified-skeleton" class="skeleton skeleton-text-lg mt-2"></div>
           </div>
           <div class="card">
             <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Pending</p>
-            <p id="stat-pending" class="text-3xl font-display font-semibold text-warning">0</p>
+            <p id="stat-pending" class="text-3xl font-display font-semibold text-warning hidden">0</p>
+            <div id="stat-pending-skeleton" class="skeleton skeleton-text-lg mt-2"></div>
           </div>
           <div class="card">
             <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Flagged</p>
-            <p id="stat-flagged" class="text-3xl font-display font-semibold text-danger">0</p>
+            <p id="stat-flagged" class="text-3xl font-display font-semibold text-danger hidden">0</p>
+            <div id="stat-flagged-skeleton" class="skeleton skeleton-text-lg mt-2"></div>
           </div>
           <div class="card">
             <p class="text-xs text-text-secondary mb-1 uppercase tracking-wide">Features</p>
-            <p id="stat-features" class="text-lg font-medium text-text-primary mt-1">—</p>
+            <p id="stat-features" class="text-lg font-medium text-text-primary mt-1 hidden">—</p>
+            <div id="stat-features-skeleton" class="skeleton skeleton-text mt-2"></div>
           </div>
         </div>
 
@@ -131,6 +140,14 @@ const base = import.meta.env.BASE_URL;
         <div id="tab-content-pending" class="hidden">
           <div id="pending-empty" class="hidden text-text-secondary py-12 text-center">No pending reviews.</div>
           <div id="pending-list" class="hidden flex flex-col"></div>
+        </div>
+
+        <div id="members-skeleton" class="flex flex-col">
+          <div class="table-row flex items-center gap-3 py-3 px-4"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="flex-1"><div class="skeleton skeleton-text mb-1"></div><div class="skeleton skeleton-text-sm"></div></div></div>
+          <div class="table-row flex items-center gap-3 py-3 px-4"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="flex-1"><div class="skeleton skeleton-text mb-1"></div><div class="skeleton skeleton-text-sm"></div></div></div>
+          <div class="table-row flex items-center gap-3 py-3 px-4"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="flex-1"><div class="skeleton skeleton-text mb-1"></div><div class="skeleton skeleton-text-sm"></div></div></div>
+          <div class="table-row flex items-center gap-3 py-3 px-4"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="flex-1"><div class="skeleton skeleton-text mb-1"></div><div class="skeleton skeleton-text-sm"></div></div></div>
+          <div class="table-row flex items-center gap-3 py-3 px-4"><div class="skeleton skeleton-circle w-8 h-8"></div><div class="flex-1"><div class="skeleton skeleton-text mb-1"></div><div class="skeleton skeleton-text-sm"></div></div></div>
         </div>
       </div>
 
@@ -444,6 +461,8 @@ const base = import.meta.env.BASE_URL;
 
     async function loadGuilds() {
       if (!session) return;
+      document.getElementById('guild-list-skeleton')!.classList.remove('hidden');
+      document.getElementById('guild-list')!.classList.add('hidden');
       try {
         const res = await fetch(`${API}/dashboard/guilds`, {
           headers: authHeaders(),
@@ -453,6 +472,8 @@ const base = import.meta.env.BASE_URL;
           return;
         }
         const guilds = await res.json();
+        document.getElementById('guild-list-skeleton')!.classList.add('hidden');
+        document.getElementById('guild-list')!.classList.remove('hidden');
         document.getElementById('guild-list')!.innerHTML = guilds.map((g: any) => `
           <a href="${base}dashboard/${g.id}/" class="card group hover:border-accent transition-all hover:scale-[1.02]">
             <div class="flex items-center gap-4 mb-3">
@@ -470,6 +491,7 @@ const base = import.meta.env.BASE_URL;
         `).join('');
       } catch (e) {
         console.error('loadGuilds error:', e);
+        document.getElementById('guild-list-skeleton')!.classList.add('hidden');
       }
     }
 
@@ -482,6 +504,17 @@ const base = import.meta.env.BASE_URL;
         ]);
 
         currentConfig = config;
+
+        // Hide skeletons, show stats
+        document.getElementById('stat-verified-skeleton')!.classList.add('hidden');
+        document.getElementById('stat-pending-skeleton')!.classList.add('hidden');
+        document.getElementById('stat-flagged-skeleton')!.classList.add('hidden');
+        document.getElementById('stat-features-skeleton')!.classList.add('hidden');
+
+        document.getElementById('stat-verified')!.classList.remove('hidden');
+        document.getElementById('stat-pending')!.classList.remove('hidden');
+        document.getElementById('stat-flagged')!.classList.remove('hidden');
+        document.getElementById('stat-features')!.classList.remove('hidden');
 
         document.getElementById('stat-verified')!.textContent = String(stats.verified_count ?? 0);
         document.getElementById('stat-pending')!.textContent = String(stats.pending_count ?? 0);
@@ -527,6 +560,10 @@ const base = import.meta.env.BASE_URL;
 
     async function loadMembers() {
       if (!session || !guildId) return;
+      // Show skeleton
+      document.getElementById('members-skeleton')!.classList.remove('hidden');
+      document.getElementById('tab-content-verified')!.classList.add('hidden');
+      document.getElementById('tab-content-pending')!.classList.add('hidden');
       try {
         const res = await fetch(`${API}/dashboard/guilds/${guildId}/verified-members`, {
           headers: authHeaders(),
@@ -534,10 +571,14 @@ const base = import.meta.env.BASE_URL;
         const members = await res.json();
         allMembers = members.filter((m: any) => m.guild_overrides?.[guildId]?.local_status !== 'pending_mod_review');
         allPending = members.filter((m: any) => m.guild_overrides?.[guildId]?.local_status === 'pending_mod_review');
+        // Hide skeleton
+        document.getElementById('members-skeleton')!.classList.add('hidden');
         renderMembers(allMembers);
         renderPending(allPending);
         updateMemberCount();
-      } catch {}
+      } catch {
+        document.getElementById('members-skeleton')!.classList.add('hidden');
+      }
     }
 
     function updateMemberCount() {
